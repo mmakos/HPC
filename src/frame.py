@@ -8,12 +8,16 @@ class Frame:
     def __init__( self ):
         self.skeletons = []
 
+    # function returns probabilities list of each pose for each given human
     # humans is list of humans with list of keypoints for every human
     def proceedFrame( self, humans ):
         newSkeletons = []
         for human in humans:
             self.proceedHuman( human, newSkeletons )
         self.skeletons = newSkeletons
+        poses = []
+        for i, skeleton in enumerate( self.skeletons ):
+            poses[ i ] = classifyPose( skeleton )
 
     def proceedHuman( self, human, newSkeletons ):
         sameSkeletonProb = []            # probability, that human is 'i' skeleton
@@ -41,3 +45,10 @@ def getMinDelta( boundingBox ):
     return c.minDeltaCoefficient * sqrt( pow( boundingBox[ 0 ], 2 ) +
                                          pow( boundingBox[ 1 ], 2 ) +
                                          pow( boundingBox[ 2 ], 2 ) )
+
+
+# functions classify pose and returns probabilities of poses
+def classifyPose( skeleton ):
+    # TODO
+    # return fit( skeleton.getSkeletonImg() )
+    return [ 1., 0., 0. ]

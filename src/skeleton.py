@@ -13,6 +13,7 @@ class Skeleton:
     def __init__( self, keypoints ):
         self.lastKeypoints = keypoints
         self.skeletonImg = np.zeros( ( c.keypointsNumber, c.framesNumber, 3 ) )
+        self.skeletonImg[ c.framesNumber - 1 ] = keypoints / 255
 
     # Functions updates skeleton from given frame keypoints (original coordinates)
     def updateSkeleton( self, keypoints ):
