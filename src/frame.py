@@ -30,7 +30,6 @@ class Frame:
             newSkeletons.append( Skeleton( human ) )        # make new skeleton if there is no similar skeleton
 
 
-
 # returns tuple ( width, height, depth )
 def getBoundingBox( keypoints ):
     return ( max( keypoints[ : ][ 0 ] ) - min( keypoints[ : ][ 0 ] ),
