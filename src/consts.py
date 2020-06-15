@@ -1,5 +1,10 @@
-framesNumber = 32
+frameWidth = 640
+frameHeight = 480
+frameDepth = 100    # to set
+
+framesNumber = 16
 keypointsNumber = 16
+posesNumber = 5
 
 # keypoints detection
 keypointThreshold = 0.5

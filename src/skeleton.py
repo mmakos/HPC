@@ -4,6 +4,7 @@
 import numpy as np
 import src.consts as c
 from math import sqrt
+from operator import truediv
 
 
 class Skeleton:
@@ -13,7 +14,7 @@ class Skeleton:
     def __init__( self, keypoints ):
         self.lastKeypoints = keypoints
         self.skeletonImg = np.zeros( ( c.keypointsNumber, c.framesNumber, 3 ) )
-        self.skeletonImg[ c.framesNumber - 1 ] = keypoints / 255
+        self.skeletonImg[ c.framesNumber - 1 ] = normalize( keypoints )
 
     # Functions updates skeleton from given frame keypoints (original coordinates)
     def updateSkeleton( self, keypoints ):
@@ -24,7 +25,7 @@ class Skeleton:
         # all columns (frames) need to be swap left
         for i in range( c.framesNumber - 1 ):
             self.skeletonImg[ i ] = self.skeletonImg[ i + 1 ]
-        self.skeletonImg[ c.framesNumber - 1 ] = self.lastKeypoints / 255
+        self.skeletonImg[ c.framesNumber - 1 ] = normalize( self.lastKeypoints )   # normalization
 
     # function returns probability, that skeleton a i b is the same skeleton
     # keypoints - skeleton A
@@ -33,6 +34,9 @@ class Skeleton:
     def compareSkeleton( self, keypoints, minDelta ):
         sab = []  # Sab - probabilities that point i of a and b is from the same skeleton
         for i, point in enumerate( keypoints ):
+            if point[ 2 ] is 0.0 or keypoints[ i ][ 2 ] is 0.0:     # we count only if points exists
+                sab[ i ] = 0
+                continue
             sab[ i ] = 1 - ( sqrt( pow( point[ 0 ] - self.lastKeypoints[ i ][ 0 ], 2 ) +
                                    pow( point[ 1 ] - self.lastKeypoints[ i ][ 1 ], 2 ) +
                                    pow( point[ 2 ] - self.lastKeypoints[ i ][ 2 ], 2 ) ) / minDelta )
@@ -42,3 +46,7 @@ class Skeleton:
 
     def getSkeletonImg( self ):
         return self.skeletonImg
+
+
+def normalize( keypoints ):
+    return [ list( map( truediv, kp, [ c.frameWidth, c.frameHeight, c.frameDepth ] ) ) for kp in keypoints ]

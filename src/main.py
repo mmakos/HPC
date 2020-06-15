@@ -14,8 +14,9 @@ def getVideoFrame():
     return [[[]]], [[]]
 
 
-def displayImg():
-    cv2.imshow( "Human Pose Classification", image )
+def putTextOnImg():
+    cv2.putText( image, "FPS: " + str( fps ), ( 5, 5 ), cv2.FONT_HERSHEY_SIMPLEX, 1, ( 0, 255, 0 ), 2,
+                 bottomLeftOrigin = False )
     for i in range( humanNumber ):
         for j in range( c.keypointsNumber ):
             if datum.poseKeypoints[ i ][ j ][ 2 ] > c.keypointThreshold:
@@ -24,8 +25,6 @@ def displayImg():
                                int( datum.poseKeypoints[ i ][ j ][ 1 ] ) + 10 ),
                              cv2.FONT_HERSHEY_SIMPLEX, 0.5, ( 0, 255, 0 ), 2 )
                 break
-    cv2.putText( image, "FPS: " + str( fps ), ( 5, 5 ), cv2.FONT_HERSHEY_SIMPLEX, 1, ( 0, 255, 0 ), 2,
-                 bottomLeftOrigin = False )
 
 
 # starting OpenPose
@@ -47,10 +46,10 @@ while True:
 
     # array of people with keypoints is in datum.poseKeypoints
     # proceedFrame gives for every human classified pose with score [pose, score]
-    poses = frames.proceedFrame( mapToRGBD( datum.poseKeypoints ) )
+    poses = frames.proceedFrame( mapToRGBD( datum.poseKeypoints, frameD ) )
     humanNumber = len( datum.poseKeypoints )
     fps = 1.0 / (time() - frameTime)
     frameTime = time()
-    image = datum.cvInputData[ :, :, : ]
-
-    displayImg()
+    image = datum.cvInputData[ :, :, : ]    # image is frame with drawn skeleton
+    putTextOnImg()                          # we put text with classified poses
+    cv2.imshow( "Human Pose Classification", image )
