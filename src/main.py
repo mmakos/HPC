@@ -1,4 +1,5 @@
 import pyopenpose as op
+import numpy as np
 import cv2
 
 from src.rgbdMap import mapToRGBD
@@ -20,7 +21,7 @@ def putTextOnImg():
     for i in range( humanNumber ):
         for j in range( c.keypointsNumber ):
             if datum.poseKeypoints[ i ][ j ][ 2 ] > c.keypointThreshold:
-                cv2.putText( image, src.poses.poses( poses[ 0 ] ) + ", score = " + src.poses.poses( poses[ 1 ] ),
+                cv2.putText( image, src.poses.poses( np.argmax( poses[ i ] ) ) + ", score = " + max( poses[ i ] ),
                              ( int( datum.poseKeypoints[ i ][ j ][ 0 ] ),
                                int( datum.poseKeypoints[ i ][ j ][ 1 ] ) + 10 ),
                              cv2.FONT_HERSHEY_SIMPLEX, 0.5, ( 0, 255, 0 ), 2 )
