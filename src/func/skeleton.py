@@ -2,7 +2,7 @@
 # and can code it to image
 
 import numpy as np
-import src.consts as c
+import consts as c
 from math import sqrt
 from operator import truediv
 
@@ -13,7 +13,7 @@ class Skeleton:
     # maxDimensions are used to reduce coordinates to [0, 1]
     def __init__( self, keypoints ):
         self.lastKeypoints = keypoints
-        self.skeletonImg = np.zeros( ( c.keypointsNumber, c.framesNumber, 3 ) )
+        self.skeletonImg = np.zeros( ( c.framesNumber, c.keypointsNumber, 3 ) )
         self.skeletonImg[ c.framesNumber - 1 ] = normalize( keypoints )
 
     # Functions updates skeleton from given frame keypoints (original coordinates)

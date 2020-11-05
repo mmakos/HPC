@@ -1,5 +1,5 @@
 from tensorflow.keras import layers, models
-import src.consts as cs
+import consts as cs
 
 
 # Function creates and returns CNN model based on VGG network

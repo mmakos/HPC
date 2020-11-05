@@ -1,7 +1,7 @@
 from math import sqrt
-import src.consts as c
-from src.skeleton import Skeleton
-from src.model import getModel
+import consts as c
+from skeleton import Skeleton
+from model import getModel
 
 
 # class to proceed frames, remembering previous skeletons ec.
@@ -19,7 +19,7 @@ class Frame:
         self.skeletons = newSkeletons
         poses = []
         for i, skeleton in enumerate( self.skeletons ):
-            poses[ i ] = self.classifyPose( skeleton )
+            poses.append( self.classifyPose( skeleton ) )
         return poses
 
     def proceedHuman( self, human, newSkeletons ):
@@ -27,7 +27,10 @@ class Frame:
         minDelta = getMinDelta( getBoundingBox( human ) )
         for i, skeleton in enumerate( self.skeletons ):
             sameSkeletonProb[ i ] = skeleton.compareSkeleton( human, minDelta )
-        maxProb = max( sameSkeletonProb )
+        if len( sameSkeletonProb ) != 0:
+            maxProb = max( sameSkeletonProb )
+        else:
+            maxProb = 0
         if maxProb >= c.probThreshold:      # skeletons are the same human
             i = sameSkeletonProb.index( maxProb )
             self.skeletons[ i ].updateSkeleton( human )     # update skeleton
@@ -39,15 +42,23 @@ class Frame:
     # functions classify pose and returns probabilities of poses
     def classifyPose( self, skeleton ):
         # TODO
-        return self.model.predict( skeleton.getSkeletonImg() )
-        # return [ 1., 0., 0., 0., 0. ]
+        #return self.model.predict( skeleton.getSkeletonImg() )
+        return [ 1., 0., 0., 0., 0. ]
 
 
 # returns tuple ( width, height, depth )
 def getBoundingBox( keypoints ):
-    return ( max( keypoints[ : ][ 0 ] ) - min( keypoints[ : ][ 0 ] ),
-             max( keypoints[ : ][ 1 ] ) - min( keypoints[ : ][ 1 ] ),
-             max( keypoints[ : ][ 2 ] ) - min( keypoints[ : ][ 2 ] ) )
+    maxmins = [ [ 0, c.frameWidth ], [ 0, c.frameHeight ], [ 0, c.frameDepth ] ]
+    for keypoint in keypoints:
+        if keypoint[ 2 ] > 0:       # if keypoint detected
+            for i in range( 3 ):
+                if keypoint[ i ] > maxmins[ i ][ 0 ]:
+                    maxmins[ i ][ 0 ] = keypoint[ i ]
+                if keypoint[ i ] < maxmins[ i ][ 1 ]:
+                    maxmins[ i ][ 1 ] = keypoint[ i ]
+    return ( maxmins[ 0 ][ 0 ] - maxmins[ 0 ][ 1 ],
+             maxmins[ 1 ][ 0 ] - maxmins[ 1 ][ 1 ],
+             maxmins[ 2 ][ 0 ] - maxmins[ 2 ][ 1 ] )
 
 
 def getMinDelta( boundingBox ):
