@@ -42,7 +42,7 @@ class Frame:
     # functions classify pose and returns probabilities of poses
     def classifyPose( self, skeleton ):
         # TODO
-        #return self.model.predict( skeleton.getSkeletonImg() )
+        # return self.model.predict( skeleton.getSkeletonImg() )
         return [ 1., 0., 0., 0., 0. ]
 
 

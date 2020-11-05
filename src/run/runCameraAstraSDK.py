@@ -9,7 +9,6 @@ from time import time
 import consts as c
 import poses
 
-
 def putTextOnImg( img ):
     cv2.putText( img, "FPS: " + "{:.3f}".format( fps ), ( 5, 23 ), cv2.FONT_HERSHEY_SIMPLEX, 0.8, ( 255, 0, 0 ), 2 )
     for i in range( humanNumber ):

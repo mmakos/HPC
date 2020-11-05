@@ -1,5 +1,7 @@
 frameWidth = 640
 frameHeight = 480
+depthWidth = 640
+depthHeight = 480
 frameDepth = 100    # to set
 
 framesNumber = 16

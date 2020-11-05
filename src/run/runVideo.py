@@ -1,8 +1,10 @@
 import pyopenpose as op
 import numpy as np
 import cv2
+import sys
+from primesense import openni2
+from primesense import _openni2 as c_api
 
-import astraPython as ap
 from rgbdMap import mapToRGBD
 from frame import Frame
 from time import time
@@ -36,18 +38,24 @@ frames = Frame()
 frameTime = time()
 
 # starting astra stream
-stream = ap.AstraStream()
-stream.initialize()
+dev = openni2.Device.open_file( sys.argv[ 1 ] )
+depthStream = dev.create_depth_stream()
+colorStream = dev.create_color_stream()
+depthStream.start()
+colorStream.start()
+
+print( "Color frames number = " + str( colorStream.get_number_of_frames() ) )
+print( "Depth frames number = " + str( depthStream.get_number_of_frames() ) )
 
 while True:
-    datum = op.Datum()
-    stream.proceedFrame()
-    frameRGB = np.array( stream.getTestRGB() ) / 255
-    frameD = np.array( stream.getTestDepth() )
+    frameDepth = depthStream.read_frame()
+    frameColor = colorStream.read_frame()
+    frameD = np.array( ( frameDepth.height, frameDepth.width ), dtype=np.unit16, buffer=frameDepth.get_buffer_as_uint16() )
+    frameRGB = np.array( (frameColor.height, frameColor.width, 3 ), dtype=np.uint8, buffer=frameColor.get_buffer_as_uint8() ) / 255
 
-    frameRGB = cv2.imread( '../../../img/ladies.jpg' )          #TODO to delete
+    datum = op.Datum()
     c.frameHeight, c.frameWidth, dim = frameRGB.shape
-    frameD = np.ones( ( c.frameHeight, c.frameWidth ), int )    #TODO to delete
+    c.depthHeight, c.depthWidth, dim = frameD.shape
     datum.cvInputData = frameRGB
     opWrapper.emplaceAndPop( [ datum ] )
 
