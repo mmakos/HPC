@@ -45,6 +45,15 @@ class Frame:
         # return self.model.predict( skeleton.getSkeletonImg() )
         return [ 1., 0., 0., 0., 0. ]
 
+    # function takes detected humans keypoints and return skeleton image for each human
+    # this is equivalent to proceedFrame, but for creating dataset
+    def getSkeletons( self, humans ):
+        newSkeletons = []
+        for human in humans:
+            self.proceedHuman( human, newSkeletons )
+        self.skeletons = newSkeletons
+        return[ skeleton.getSkeletonImg() for skeleton in self.skeletons ]
+
 
 # returns tuple ( width, height, depth )
 def getBoundingBox( keypoints ):

@@ -47,9 +47,9 @@ def record():
 if __name__ == '__main__':
     if sys.platform == "win32":
         openni2.initialize(
-            "../../../OpenNI/Windows/Astra OpenNI2 Development Instruction(x64)_V1.3/OpenNI2/OpenNI-Windows-x64-2.3.0.63/Redist" )
+            "../../OpenNI/Windows/Astra OpenNI2 Development Instruction(x64)_V1.3/OpenNI2/OpenNI-Windows-x64-2.3.0.63/Redist" )
     else:
-        openni2.initialize( "../../../OpenNI/Linux/OpenNI-Linux-x64-2.3.0.63/Redist" )
+        openni2.initialize( "../../OpenNI/Linux/OpenNI-Linux-x64-2.3.0.63/Redist" )
     print( "Device initialized." )
 
     dev = openni2.Device.open_any()
