@@ -35,11 +35,11 @@ class Skeleton:
         sab = []  # Sab - probabilities that point i of a and b is from the same skeleton
         for i, point in enumerate( keypoints ):
             if point[ 2 ] is 0.0 or keypoints[ i ][ 2 ] is 0.0:     # we count only if points exists
-                sab[ i ] = 0
+                sab.append( 0 )
                 continue
-            sab[ i ] = 1 - ( sqrt( pow( point[ 0 ] - self.lastKeypoints[ i ][ 0 ], 2 ) +
-                                   pow( point[ 1 ] - self.lastKeypoints[ i ][ 1 ], 2 ) +
-                                   pow( point[ 2 ] - self.lastKeypoints[ i ][ 2 ], 2 ) ) / minDelta )
+            sab.append( 1 - ( sqrt( pow( point[ 0 ] - self.lastKeypoints[ i ][ 0 ], 2 ) +
+                                    pow( point[ 1 ] - self.lastKeypoints[ i ][ 1 ], 2 ) +
+                                    pow( point[ 2 ] - self.lastKeypoints[ i ][ 2 ], 2 ) ) / minDelta ) )
             if sab[ i ] < 0:
                 sab[ i ] = 0
         return np.mean( sab )
