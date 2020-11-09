@@ -4,8 +4,10 @@ import cv2
 import sys
 import os
 from primesense import openni2
+from time import time
 
 sys.path.insert( 1, '../func' )
+import display
 import consts as c
 from frame import Frame
 from rgbdMap import mapToRGBD
@@ -81,7 +83,7 @@ def getDepthFrame():
 def proceedFrame():
     datum = op.Datum()
     datum.cvInputData = frameRGB
-    opWrapper.emplaceAndPop( op.VectorDatum( [ datum ] ) )
+    opWrapper.emplaceAndPop( [ datum ] )
 
     # array of people with keypoints is in datum.poseKeypoints
     # getSkeletons gives for every human skeleton image
@@ -136,6 +138,7 @@ if __name__ == '__main__':
         opWrapper = initOpenPose()
         frame = Frame()
 
+    t = time()
     # main loop
     for i in range( framesNumber ):
         frameRGB = getColorFrame()
@@ -148,6 +151,8 @@ if __name__ == '__main__':
             for j, img in enumerate( skeletonImages ):
                 cv2.imwrite( f"{ dataPath }/f{ i }s{ j }.png", 255 * cv2.rotate( img, cv2.ROTATE_90_CLOCKWISE ) )
 
+        display.displayFrameTime( frameRGB, time() - t )
+        t = time()
         cv2.imshow( "Video frame", frameRGB )
         if cv2.waitKey( 1 ) & 0xFF == ord( 'q' ):
             break

@@ -9,7 +9,6 @@ from rgbdMap import mapToRGBD
 from frame import Frame
 from time import time
 import consts as c
-import poses
 
 
 def putTextOnImg( img ):
@@ -17,7 +16,7 @@ def putTextOnImg( img ):
     for i in range( humanNumber ):
         for j in range( c.keypointsNumber ):
             if datum.poseKeypoints[ i ][ j ][ 2 ] > c.keypointThreshold:
-                text = poses.poses[ np.argmax( posesScores[ i ] ) ] + ", score = " + "{:.2f}".format( max( posesScores[ i ] ) )
+                text = c.poses[ np.argmax( posesScores[ i ] ) ] + ", score = " + "{:.2f}".format( max( posesScores[ i ] ) )
                 x = int( datum.poseKeypoints[ i ][ j ][ 0 ] - 10 )
                 y = int( datum.poseKeypoints[ i ][ j ][ 1 ] - 5 )
                 ( textW, textH ) = cv2.getTextSize(  text, cv2.FONT_HERSHEY_SIMPLEX, fontScale = 0.5, thickness = 2 )[ 0 ]
