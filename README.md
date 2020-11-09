@@ -7,7 +7,7 @@ As an input it takes video stream of RGBD camera (color and depth stream) from a
 Then, based on classified poses we can monitor human movement and e.g. detect falls.
 
 ## Architecture basics
-Solution is based on body keypoints which are detectedusing [OpenPose](https://github.com/CMU-Perceptual-Computing-Lab/openpose) library.
+Solution is based on body keypoints which are detected using [OpenPose](https://github.com/CMU-Perceptual-Computing-Lab/openpose) library.
 System estimates human body's keypoints with OpenPose and converts them into small abstract image which represents theirs positions in 3D space trough multiple frames (so it's in facet 4D space).
 Columns of this image represents sequent frames, rows represents different keypoints and color represent 3D position (B-x, G-y, R-D).
 So example image for 15 keypoints and only RGB camera looks like:<br>
@@ -35,7 +35,7 @@ Usage: `python recordVideo.py -v video_name`:
 Module takes recorded video in *.oni* or regular video format, estimates human skeletons and converts this skeletons into images.
 Module also shows video with estimated skeletons.
 
-Usage: `python proceedVideo.py video_path <-d> <-v> -p proceed`:
+Usage: `python proceedVideo.py video_path -d -v -p proceed`:
 * video_path - path to your video relative to running folder or to `/data/video` folder.
 * -d - if this option is selected, module will proceed depth frames as well. Select this option only when you proceed *.oni* file.
 * -v - view mode. Select this option when you only want to view your video (without estimating skeletons. Useful for viewing *.oni* files.
