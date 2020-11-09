@@ -3,6 +3,13 @@ from primesense import openni2
 from primesense import _openni2 as c_api
 import sys
 import keyboard
+import argparse
+
+
+def getArgs():
+    parser = argparse.ArgumentParser()
+    parser.add_argument( "-v", "--video_path", default=datetime.now().strftime( "%Y%m%d%H%M%S" ), help="Path to recorded video" )
+    return parser.parse_known_args()[ 0 ]
 
 
 def record():
@@ -20,10 +27,8 @@ def record():
     depthStream.start()
     colorStream.start()
 
-    try:
-        fileName = sys.argv[ 1 ]
-    except IndexError:
-        fileName = datetime.now().strftime( "%Y%m%d%H%M%S" )
+    args = getArgs()
+    fileName = "../../data/videos/" + args.video_path
 
     recorder = openni2.Recorder( ( fileName + ".oni" ).encode( 'utf-8' ) )
     recorder.attach( depthStream )
@@ -47,7 +52,7 @@ def record():
 if __name__ == '__main__':
     if sys.platform == "win32":
         openni2.initialize(
-            "../../OpenNI/Windows/Astra OpenNI2 Development Instruction(x64)_V1.3/OpenNI2/OpenNI-Windows-x64-2.3.0.63/Redist" )
+            "../../externals/OpenNI/Windows/Astra OpenNI2 Development Instruction(x64)_V1.3/OpenNI2/OpenNI-Windows-x64-2.3.0.63/Redist" )
     else:
         openni2.initialize( "../../OpenNI/Linux/OpenNI-Linux-x64-2.3.0.63/Redist" )
     print( "Device initialized." )

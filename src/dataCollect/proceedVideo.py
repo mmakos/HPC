@@ -100,7 +100,7 @@ if __name__ == '__main__':
     args = allArgs[ 0 ]
     dataPath = None
     if args.proceed:
-        dataPath = f"../../data/{ args.proceed }"
+        dataPath = f"../../data/images/{ args.proceed }"
         try:
             os.mkdir( dataPath )
         except Exception:

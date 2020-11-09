@@ -4,7 +4,7 @@ depthWidth = 640
 depthHeight = 480
 frameDepth = 100    # to set
 
-framesNumber = 16
+framesNumber = 32
 keypointsNumber = 15
 posesNumber = 5
 
