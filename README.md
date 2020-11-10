@@ -75,13 +75,13 @@ Usage: `python createDataset.py dataset_name -p poses -z`
 ### Internal modules
 #### const.py
 Module stores all constants:
-* frameWidth, frameHeight - color frame dimensions, automatically set after running video stream
-* depthWidth, depthHeight - depth frame dimensions, automatically set after running video stream with depth canal
-* frameDepth - maximal depth of depth frame
-* framesNumber - number of frames stored in one skeleton image
-* keypoints - number of keypoints stored in one skeleton image
-* keypointThreshold - threshold from which keypoints are proceeded
-* poses - table of poses (labels)
+* *frameWidth, frameHeight* - color frame dimensions, automatically set after running video stream
+* *depthWidth, depthHeight* - depth frame dimensions, automatically set after running video stream with depth canal
+* *frameDepth* - maximal depth of depth frame
+* *framesNumber* - number of frames stored in one skeleton image
+* *keypoints* - number of keypoints stored in one skeleton image
+* *keypointThreshold* - threshold from which keypoints are proceeded
+* *poses* - table of poses (labels)
 
 #### frame.py
 Class Frame stores all skeletons.
@@ -93,10 +93,10 @@ Class Frame stores all skeletons.
 
 #### skeleton.py
 Class Skeleton stores single skeleton tracked through multiple frames.
-* *Skeleton.updateSkeleton( keypoints ) - function updates skeleton with given keypoints
-* *Skeleton.updateImg() - internal function updates skeleton image by removing oldest frame and adding new one
-* *Skeleton.compareSkeleton( keypoints, minDelta ) - function returns probability that given keypoints belongs to this skeleton.
-* *Skeleton.getSkeletonImg() - function returns skeleton image in numpy array format
+* *Skeleton.updateSkeleton( keypoints )* - function updates skeleton with given keypoints
+* *Skeleton.updateImg()* - internal function updates skeleton image by removing oldest frame and adding new one
+* *Skeleton.compareSkeleton( keypoints, minDelta )* - function returns probability that given keypoints belongs to this skeleton.
+* *Skeleton.getSkeletonImg()* - function returns skeleton image in numpy array format
 
 #### model.py
 Module creates network models.
