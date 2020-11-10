@@ -7,7 +7,7 @@ from random import shuffle
 
 parser = argparse.ArgumentParser()
 parser.add_argument( "dataset_name", help="Path to output dataset file relative to /data/datasets." )
-parser.add_argument( "-p", "--poses", default="poses", help="Path to folder with your poses folders." )
+parser.add_argument( "-p", "--poses", default="poses", help="Path to folder with your poses folders relative to /data." )
 parser.add_argument( "-z", "--zipped", help="File will be compressed to .zip file.", action="store_true" )
 args = parser.parse_known_args()[ 0 ]
 

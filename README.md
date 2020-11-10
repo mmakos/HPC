@@ -1,4 +1,4 @@
-# Human Pose Classification - BEngThesis
+# Human Pose Classification - BEng Thesis
 ![WEiTI - elka.pw.edu.pl](https://lh3.googleusercontent.com/fife/ABSRlIqJJC3S6Kcy0WmhYjwolt76L3_JZfK_Mn_Yb9h97Uif2ZgtiZZgPDDxUv_45mHQCC49TI-lL4ml8IJR1dY6Xtajf2w0tqbeXdO_tmvoS1luu09V93tY5ayOjWtPc5Cg7UY6MkaMkJro2g0QLELHvnXolwDp1xGHiNKoN4r9d3vwWzwwJX1ftmiN3Q6OqkX046iC0S7tyEVHLc0untMLxFNd6Q__gmsP3FueFFcDGDt-vYuNhNB9knOh4OSQMQOk2xhGQ5_FHUvCtj4r6PocZitQ2qWADQTts8CoCACNwCq2x7PaKSB9Qmp981kG_yjfDafJGlxIEwT3Ktkhov7XuHW8rZBjgxjUFU2eeU7GjyAsocD2m9HSoEkeF_EU_MdyoaHdlaHs8GKxu9XzSlqYl47_LgQxRNGOx14MOwLiFIVD3FsOR4n9FNwrX3tMJ0OQCkto2heHdUFZso8LpmrdSuuRfoWnS0c3STfx8w6T9wgi5hcALVjfhZ8xU4EUWUS-wig-BrZLClS_II01KlyhimbALnNJvp1PncFmB9aAYD5FJD9hKH9TM67a2kRPceX72pPfw1WCd6YzcP-6qccMHZfgijo9R5w0VGHEh0IRP2SPDFIkWwSsIpDyCGyBxK02y_7nDirbohezNs26EYj8O5EQ42Ofkr2kF9X9KOEa8xltuBJq6lIZGhjuxCoXj5NroTBA-kvFyLN28pPBT7bfQa2ayQt_l6fPqQ=w2560-h699-ft)
 
 ## About project
@@ -18,13 +18,16 @@ So example image for 15 keypoints and only RGB camera looks like:<br>
 For now:
 * Built OpenPose in folder `/externals/openpose/build`
 * Python 3 (I work with 3.7 and I don't support other versions for now (e.g. OpenPose didn't work for me with Python 3.9) ) with libraries:
+    * tensorflow
     * opencv-python
     * primesense
     * keyboard
-    * numpy (comes with opencv)
+    * numpy (comes with opencv)<br>
+      *You can satisfy all above requirements by running script `requirements.bat`*
 * For working with robot camera - Orbbec Astra SDK - OpenNI in folder `/externals`
 
 ## Working with (available modules)
+### Data proceeding
 #### recordVideo.py
 Module records stream of RGBD camera and writes output to *.oni* file. Output video will be stored in `/data/videos`.
 
@@ -39,7 +42,7 @@ Usage: `python proceedVideo.py video_path -d -v -p proceed`:
 * video_path - path to your video relative to running folder or to `/data/video` folder.
 * -d - if this option is selected, module will proceed depth frames as well. Select this option only when you proceed *.oni* file.
 * -v - view mode. Select this option when you only want to view your video (without estimating skeletons. Useful for viewing *.oni* files.
-* -p proceed - proceed mode. Select this option when you want to code estimated skeletons to images. *Proceed* is name of folder where images will be saved (relativeto `/data/images/` folder).
+* -p proceed - proceed mode. Select this option when you want to code estimated skeletons to images. *Proceed* is name of folder where images will be saved (relative to `/data/images/` folder).
 
 #### viewImagesAsVideo.py
 Module shows skeleton images as video.
@@ -48,3 +51,25 @@ Usage: `python viewImagesAsVideo.py -s skeleton -f fps -z zoom`
 * skeleton - index of skeleton to be shown
 * fps - how many frames per second will be played
 * zoom - factor by which every dimension will be multiplied
+
+#### createDataset.py
+Module create dataset from images to numpy file ready to train.
+
+To properly generate dataset you have to store your images in folders named `<filename>_<label>` where *filename* can be anything but *label* is label of images according to *poses* table in *consts.py* file.
+Then you have to move all this folders to move all this folders to one final folder. So it should look like this:
+<pre>
+poses
+|--run_2
+|  |--image1.png
+|  |--image2.png
+|--stand_0
+|  |--image1.png
+|--walk_1
+</pre>
+
+Usage: `python createDataset.py dataset_name -p poses -z`
+* dataset_name - name of dataset you want to create.
+* poses - path to your folder with labels subfolders relative to `/data` folder.
+* -z - if this option is selected dataset will be stored in *.zip* format instead of *.npy*.
+
+### Internal modules
