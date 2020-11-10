@@ -11,8 +11,9 @@ class Skeleton:
     # last keypoints are keypoints of skeleton from previous frame
     # to create new skeleton we have to give actual keypoints of this skeleton
     # maxDimensions are used to reduce coordinates to [0, 1]
-    def __init__( self, keypoints ):
+    def __init__( self, keypoints, skeletonId ):
         self.lastKeypoints = keypoints
+        self.id = skeletonId
         self.skeletonImg = np.zeros( ( c.framesNumber, c.keypointsNumber, 3 ) )
         self.skeletonImg[ c.framesNumber - 1 ] = normalize( keypoints )
 
@@ -46,6 +47,9 @@ class Skeleton:
 
     def getSkeletonImg( self ):
         return self.skeletonImg
+
+    def getSkeletonId( self ):
+        return self.id
 
 
 def normalize( keypoints ):

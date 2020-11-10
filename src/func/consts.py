@@ -8,7 +8,7 @@ framesNumber = 32
 keypointsNumber = 15
 
 # keypoints detection
-keypointThreshold = 0.5
+keypointThreshold = 0.1
 
 # tracking
 minDeltaCoefficient = 0.01

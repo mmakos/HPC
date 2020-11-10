@@ -1,14 +1,15 @@
 from math import sqrt
 import consts as c
 from skeleton import Skeleton
-from model import getModel
+import cv2
 
 
 # class to proceed frames, remembering previous skeletons ec.
 class Frame:
-    def __init__( self ):
+    def __init__( self, model=None ):
         self.skeletons = []
-        self.model = getModel()
+        self.model = model
+        self.maxSkeletonId = 0
 
     # function returns probabilities list of each pose for each given human
     # humans is list of humans with list of keypoints for every human
@@ -18,8 +19,8 @@ class Frame:
             self.proceedHuman( human, newSkeletons )
         self.skeletons = newSkeletons
         poses = []
-        for i, skeleton in enumerate( self.skeletons ):
-            poses.append( self.classifyPose( skeleton ) )
+        for skeleton in self.skeletons:
+            poses.append( [ self.classifyPose( skeleton ), skeleton.getSkeletonId() ] )
         return poses
 
     def proceedHuman( self, human, newSkeletons ):
@@ -37,13 +38,13 @@ class Frame:
             newSkeletons.append( self.skeletons[ i ] )      # add skeleton to new skeletons
             self.skeletons.pop( i )                         # skeleton cannot be compared again
         else:
-            newSkeletons.append( Skeleton( human ) )        # make new skeleton if there is no similar skeleton
+            newSkeletons.append( Skeleton( human, self.maxSkeletonId ) )        # make new skeleton if there is no similar skeleton
+            self.maxSkeletonId = self.maxSkeletonId + 1
 
     # functions classify pose and returns probabilities of poses
     def classifyPose( self, skeleton ):
-        # TODO
-        # return self.model.predict( skeleton.getSkeletonImg() )
-        return [ 1., 0., 0., 0., 0. ]
+        return self.model.predict( ( cv2.rotate( skeleton.getSkeletonImg(), cv2.ROTATE_90_CLOCKWISE ) * 255 ).reshape( -1, c.keypointsNumber, c.framesNumber, 3 ) )
+        # return [ 1., 0., 0., 0., 0. ]
 
     # function takes detected humans keypoints and return skeleton image for each human
     # this is equivalent to proceedFrame, but for creating dataset
@@ -52,7 +53,7 @@ class Frame:
         for human in humans:
             self.proceedHuman( human, newSkeletons )
         self.skeletons = newSkeletons
-        return[ skeleton.getSkeletonImg() for skeleton in self.skeletons ]
+        return [ [ skeleton.getSkeletonImg(), skeleton.getSkeletonId() ] for skeleton in self.skeletons ]
 
 
 # returns tuple ( width, height, depth )

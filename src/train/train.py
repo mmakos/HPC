@@ -2,6 +2,7 @@ import sys
 import argparse
 import numpy as np
 import os
+import cv2
 
 os.environ[ 'TF_CPP_MIN_LOG_LEVEL' ] = '3'
 import tensorflow as tf
@@ -70,5 +71,7 @@ if __name__ == '__main__':
     m.fit( trainDataset, epochs=3, batch_size=c.batchSize, validation_data=testDataset )
     testLoss, testAccuracy = m.evaluate( testDataset )
     print( "Test loss = " + str( testLoss ) + "\nTest accuracy = " + str( testAccuracy ) )
+    img = cv2.imread( "../../data/poses/dance_5/f0s0.png" ).reshape( -1, c.keypointsNumber, c.framesNumber, 3 )
+    print( m.predict( img ) )
 
     saveModel()
