@@ -27,7 +27,7 @@ For now:
 * For working with robot camera - Orbbec Astra SDK - OpenNI in folder `/externals`
 
 ## Working with (available modules)
-### Data proceeding
+### Data processing
 #### recordVideo.py
 Module records stream of RGBD camera and writes output to *.oni* file. Output video will be stored in `/data/videos`.
 
