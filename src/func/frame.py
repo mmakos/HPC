@@ -1,15 +1,14 @@
 from math import sqrt
 import consts as c
 from skeleton import Skeleton
-# from model import getModel
+from model import getModel
 
 
 # class to proceed frames, remembering previous skeletons ec.
 class Frame:
     def __init__( self ):
         self.skeletons = []
-        # self.model = getModel()
-        self.model = None
+        self.model = getModel()
 
     # function returns probabilities list of each pose for each given human
     # humans is list of humans with list of keypoints for every human

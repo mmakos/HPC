@@ -73,3 +73,35 @@ Usage: `python createDataset.py dataset_name -p poses -z`
 * -z - if this option is selected dataset will be stored in *.zip* format instead of *.npy*.
 
 ### Internal modules
+#### const.py
+Module stores all constants:
+* frameWidth, frameHeight - color frame dimensions, automatically set after running video stream
+* depthWidth, depthHeight - depth frame dimensions, automatically set after running video stream with depth canal
+* frameDepth - maximal depth of depth frame
+* framesNumber - number of frames stored in one skeleton image
+* keypoints - number of keypoints stored in one skeleton image
+* keypointThreshold - threshold from which keypoints are proceeded
+* poses - table of poses (labels)
+
+#### frame.py
+Class Frame stores all skeletons.
+* *Frame.proceedFrame( humans )* - function proceeds single frame by updating tracked skeletons.
+* *Frame.proceedFrame( human, newSkeletons )* - internal function proceed detected skeletons
+* *Frame.classifyPose( skeleton )* - function returns probability map for given skeleton
+* *Frame.getSkeletons( humans )* - function proceed single frame and returns array of skeleton images. Function is equivalent od *proceedFrame* but for dataset creating.
+* *getBoundingBox( keypoints )* - help function, returns size of bounding box for given keypoints in format ( width, height, depth )
+
+#### skeleton.py
+Class Skeleton stores single skeleton tracked through multiple frames.
+* *Skeleton.updateSkeleton( keypoints ) - function updates skeleton with given keypoints
+* *Skeleton.updateImg() - internal function updates skeleton image by removing oldest frame and adding new one
+* *Skeleton.compareSkeleton( keypoints, minDelta ) - function returns probability that given keypoints belongs to this skeleton.
+* *Skeleton.getSkeletonImg() - function returns skeleton image in numpy array format
+
+#### model.py
+Module creates network models.
+
+* *getModel()* - function returns default model.
+
+#### rgbdMap.py
+* *mapToRGBD( keypoints, depthCanal )* - unction maps given keypoints of all humans to RGBD image. Keypoints are [ humans[ x, y, score ] ].
