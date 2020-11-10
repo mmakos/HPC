@@ -1,3 +1,5 @@
+import os
+os.environ[ 'TF_CPP_MIN_LOG_LEVEL' ] = '3'
 from tensorflow.keras import layers, models
 import consts as c
 
@@ -7,7 +9,7 @@ def getModel():
     model = models.Sequential()
     # first group
     model.add( layers.Conv2D( filters=64, kernel_size=3, strides=1, padding='same',
-                              activation='relu', input_shape=( c.framesNumber, c.keypointsNumber, 3 ) ) )
+                              activation='relu', input_shape=( c.keypointsNumber, c.framesNumber, 3 ) ) )
     model.add( layers.Conv2D( filters=64, kernel_size=3, strides=1, padding='same', activation='relu' ) )
     model.add( layers.MaxPooling2D( pool_size=2, strides=1, padding='same' ) )
 

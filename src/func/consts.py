@@ -23,3 +23,6 @@ poses = (
     "lie",
     "dance"
 )
+
+# training
+batchSize = 8
