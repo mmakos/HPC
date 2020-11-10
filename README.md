@@ -42,7 +42,7 @@ Usage: `python proceedVideo.py video_path -d -v -p proceed`:
 * video_path - path to your video relative to running folder or to `/data/video` folder.
 * -d - if this option is selected, module will proceed depth frames as well. Select this option only when you proceed *.oni* file.
 * -v - view mode. Select this option when you only want to view your video (without estimating skeletons. Useful for viewing *.oni* files.
-* -p proceed - proceed mode. Select this option when you want to code estimated skeletons to images. *Proceed* is name of folder where images will be saved (relative to `/data/images/` folder).
+* proceed - proceed mode. Select this option when you want to code estimated skeletons to images. *Proceed* is name of folder where images will be saved (relative to `/data/images/` folder).
 
 #### viewImagesAsVideo.py
 Module shows skeleton images as video.
@@ -72,6 +72,26 @@ Usage: `python createDataset.py dataset_name -p poses -z`
 * poses - path to your folder with labels subfolders relative to `/data` folder.
 * -z - if this option is selected dataset will be stored in *.zip* format instead of *.npy*.
 
+### Training
+#### train.py
+Module opens model or creates new one, trains it on given dataset in *.npz* format and saves trained model.
+
+Usage: `python train.py dataset_name -m model_name -o output_model`
+* dataset_name - name of data set on which you want to train your model.
+* model_name - name of model, which will be opened or created if no such model exists
+* output_model - name of output model, if model with that name exists it will be overwritten. If this arg is not specified model won't be saved.
+
+### Running
+#### estimateVideo.py
+Module loads video and estimates poses for every human in every frame.
+
+Usage: `python proceedVideo.py video_path -m model -d -v -p`:
+* video_path - path to your video relative to running folder or to `/data/video` folder.
+* model - name of model you want to load relative to `/data/models` folder.
+* -d - if this option is selected, module will proceed depth frames as well. Select this option only when you proceed *.oni* file.
+* -v - view mode. Select this option when you only want to view your video (without estimating skeletons. Useful for viewing *.oni* files.
+* -p - proceed mode. Select this option when you want estimate poses.
+
 ### Internal modules
 #### const.py
 Module stores all constants:
@@ -85,8 +105,8 @@ Module stores all constants:
 
 #### frame.py
 Class Frame stores all skeletons.
-* *Frame.proceedFrame( humans )* - function proceeds single frame by updating tracked skeletons.
-* *Frame.proceedFrame( human, newSkeletons )* - internal function proceed detected skeletons
+* *Frame.proceedFrame( humans )* - function proceeds single frame by updating tracked skeletons and estimate pose for every tracked skeleton. It returns array, where first element is array of pose probabilities and second element is id of skeleton.
+* *Frame.proceedHuman( human, newSkeletons )* - internal function proceed detected skeletons
 * *Frame.classifyPose( skeleton )* - function returns probability map for given skeleton
 * *Frame.getSkeletons( humans )* - function proceed single frame and returns array of skeleton images. Function is equivalent od *proceedFrame* but for dataset creating.
 * *getBoundingBox( keypoints )* - help function, returns size of bounding box for given keypoints in format ( width, height, depth )
@@ -97,10 +117,10 @@ Class Skeleton stores single skeleton tracked through multiple frames.
 * *Skeleton.updateImg()* - internal function updates skeleton image by removing oldest frame and adding new one
 * *Skeleton.compareSkeleton( keypoints, minDelta )* - function returns probability that given keypoints belongs to this skeleton.
 * *Skeleton.getSkeletonImg()* - function returns skeleton image in numpy array format
+* *Skeleton.getSkeletonId()* - function returns skeleton id. Skeletons stored in *Frame* class are not sorted, same as skeletons returned from *proceedFrame()* function.
 
 #### model.py
 Module creates network models.
-
 * *getModel()* - function returns default model.
 
 #### rgbdMap.py
