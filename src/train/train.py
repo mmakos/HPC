@@ -29,7 +29,7 @@ def readDataset():
 
 
 def getTrainTest( ds, datasetSize, trainSizeFactor ):
-    if not 0 < trainSizeFactor < 1:
+    if not 0 < trainSizeFactor <= 1:
         raise ValueError( "Train size factor must be in <0, 1>" )
     ds = ds.shuffle( datasetSize )
     return ds.take( int( trainSizeFactor * datasetSize ) ), ds.skip( int( trainSizeFactor * datasetSize ) )
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     images, labels = readDataset()
     m = getModel()
     dataset = tf.data.Dataset.from_tensor_slices( ( images, labels ) )
-    trainDataset, testDataset = getTrainTest( dataset, len( images ), 0.8 )
+    trainDataset, testDataset = getTrainTest( dataset, len( images ), 1.0 )
 
     print( "Train dataset: " + str( trainDataset ) )
     print( "Test dataset: " + str( testDataset ) )
@@ -68,10 +68,8 @@ if __name__ == '__main__':
     trainDataset = trainDataset.batch( c.batchSize )
     testDataset = testDataset.batch( c.batchSize )
     # trainDataset.reshape( -1, c.keypointsNumber, c.framesNumber, 3 )
-    m.fit( trainDataset, epochs=3, batch_size=c.batchSize, validation_data=testDataset )
-    testLoss, testAccuracy = m.evaluate( testDataset )
-    print( "Test loss = " + str( testLoss ) + "\nTest accuracy = " + str( testAccuracy ) )
-    img = cv2.imread( "../../data/poses/dance_5/f0s0.png" ).reshape( -1, c.keypointsNumber, c.framesNumber, 3 )
-    print( m.predict( img ) )
+    m.fit( trainDataset, epochs=3, batch_size=c.batchSize )
+    # testLoss, testAccuracy = m.evaluate( testDataset )
+    # print( "Test loss = " + str( testLoss ) + "\nTest accuracy = " + str( testAccuracy ) )
 
     saveModel()

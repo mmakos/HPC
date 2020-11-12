@@ -4,6 +4,8 @@ import consts as c
 # function maps given keypoints of all humans to RGBD image
 # keypoints are [ x cord, y cord, score ]
 def mapToRGBD( keypoints, depthCanal ):
+    if not keypoints:
+        return []
     keypointsRGBD = []
     for human in keypoints:
         humanRGBD = []

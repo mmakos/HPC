@@ -23,11 +23,12 @@ import pyopenpose as op
 
 def parseArgs():
     parser = argparse.ArgumentParser()
-    parser.add_argument( "video_path", type=str, help="Path to file you want to estimate" )
+    parser.add_argument( "video_path", type=str, help="Path to file you want to estimate." )
     parser.add_argument( "-m", "--model", default="michalek", help="Path to model relative to /data/models." )
-    parser.add_argument( "-d", "--depth", help="Depth frames will be used to estimation as well", action="store_true" )
-    parser.add_argument( "-v", "--view", help="View only mode", action="store_true" )
-    parser.add_argument( "-p", "--proceed", help="Pose will be estimated", action="store_true" )
+    parser.add_argument( "-w", "--write_name", help="Name of output video. If none, video will not be saved." )
+    parser.add_argument( "-d", "--depth", help="Depth frames will be used to estimation as well.", action="store_true" )
+    parser.add_argument( "-v", "--view", help="View only mode.", action="store_true" )
+    parser.add_argument( "-p", "--proceed", help="Pose will be estimated.", action="store_true" )
     return parser.parse_known_args()
 
 
@@ -52,6 +53,7 @@ def initOpenPose():
     # starting OpenPose
     params = dict()
     params[ "model_folder" ] = "../../externals/openpose/models/"
+    params[ "render_threshold" ] = c.keypointThreshold
     getOpenPoseArgs( params )
     wrapper = op.WrapperPython()
     wrapper.configure( params )
@@ -150,15 +152,27 @@ if __name__ == '__main__':
         frameD = getDepthFrame()
         if i is 0:
             initFrameDimensions()
+            if args.write_name is not None:
+                out = cv2.VideoWriter( args.write_name, cv2.VideoWriter_fourcc( *'mp4v' ), 20, ( c.frameWidth, c.frameHeight ) )
 
         if not args.view:
             frameRGB, poses, humans = proceedFrame()
             for j, human in enumerate( humans ):
-                print( "skeleton: " + str( poses[ j ][ 1 ] ) + "\tposes: " + str( poses[ j ][ 0 ] ) )
-                display.displayPose( frameRGB, human, str( poses[ j ][ 1 ] ) + ": " + c.poses[ np.argmax( poses[ j ][ 0 ] ) ] )
+                try:
+                    print( "skeleton: " + str( poses[ j ][ 1 ] ) + "\tposes: " + str( poses[ j ][ 0 ] ) )
+                    display.displayPose( frameRGB, human, str( poses[ j ][ 1 ] ) + ": " +
+                                         c.poses[ np.argmax( poses[ j ][ 0 ] ) ] + f" - { int( np.max( poses[ j ][ 0 ] ) * 100 ) }%" )
+                except:
+                    pass
 
         display.displayFrameTime( frameRGB, time() - t )
         t = time()
+
         cv2.imshow( "Video frame", frameRGB )
+        if args.write_name is not None:
+            out.write( frameRGB )
         if cv2.waitKey( 1 ) & 0xFF == ord( 'q' ):
             break
+
+    if args.write_name is not None:
+        out.release()

@@ -9,10 +9,13 @@ keypointsNumber = 15
 
 # keypoints detection
 keypointThreshold = 0.1
+minDetectedKeypoints = 6
 
 # tracking
-minDeltaCoefficient = 0.01
-probThreshold = 0.01
+minDeltaCoefficient = 0.1     # F
+probThreshold = 0.1
+frameTime = 0.333    # 10 FPS
+maxFrameTime = 0.1  # 10 FPS
 
 # poses
 poses = (
@@ -21,7 +24,8 @@ poses = (
     "run",
     "sit",
     "lie",
-    "dance"
+    "dance",
+    "jump"
 )
 
 # training

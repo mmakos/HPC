@@ -2,31 +2,47 @@ from math import sqrt
 import consts as c
 from skeleton import Skeleton
 import cv2
+from time import time
 
 
 # class to proceed frames, remembering previous skeletons ec.
 class Frame:
-    def __init__( self, model=None ):
+    def __init__( self, model=None, live=True ):
         self.skeletons = []
         self.model = model
-        self.maxSkeletonId = 0
+        self.lastSkeletonId = 0
+        self.live = live
+        self.prevTime = time()
 
     # function returns probabilities list of each pose for each given human
     # humans is list of humans with list of keypoints for every human
     def proceedFrame( self, humans ):
+        if self.live:
+            c.frameTime = self.prevTime - time()
+            if c.frameTime > c.maxFrameTime:
+                c.frameTime = c.maxFrameTime
+            self.prevTime = time()
         newSkeletons = []
         for human in humans:
-            self.proceedHuman( human, newSkeletons )
-        self.skeletons = newSkeletons
+            if sum( 1 for kp in human if kp != [ 0.0, 0.0, 0.0 ] ) >= c.minDetectedKeypoints:
+                self.proceedHuman( human, newSkeletons )
+            else:
+                newSkeletons.append( None )
+        self.skeletons = [ s for s in newSkeletons if s is not None ]
         poses = []
-        for skeleton in self.skeletons:
-            poses.append( [ self.classifyPose( skeleton ), skeleton.getSkeletonId() ] )
+        for skeleton in newSkeletons:
+            if skeleton is not None:
+                poses.append( [ self.classifyPose( skeleton ), skeleton.getSkeletonId() ] )
+            else:
+                poses.append( None )
         return poses
 
     def proceedHuman( self, human, newSkeletons ):
         sameSkeletonProb = []            # probability, that human is 'i' skeleton
         minDelta = getMinDelta( getBoundingBox( human ) )
+        print( "\nminDelta = " + str( minDelta ) )
         for skeleton in self.skeletons:
+            print( "Comparing to skeleton " + str( skeleton.getSkeletonId() ) )
             sameSkeletonProb.append( skeleton.compareSkeleton( human, minDelta ) )
         if len( sameSkeletonProb ) != 0:
             maxProb = max( sameSkeletonProb )
@@ -38,8 +54,8 @@ class Frame:
             newSkeletons.append( self.skeletons[ i ] )      # add skeleton to new skeletons
             self.skeletons.pop( i )                         # skeleton cannot be compared again
         else:
-            newSkeletons.append( Skeleton( human, self.maxSkeletonId ) )        # make new skeleton if there is no similar skeleton
-            self.maxSkeletonId = self.maxSkeletonId + 1
+            newSkeletons.append( Skeleton( human, self.lastSkeletonId ) )        # make new skeleton if there is no similar skeleton
+            self.lastSkeletonId = self.lastSkeletonId + 1
 
     # functions classify pose and returns probabilities of poses
     def classifyPose( self, skeleton ):
@@ -53,14 +69,14 @@ class Frame:
         for human in humans:
             self.proceedHuman( human, newSkeletons )
         self.skeletons = newSkeletons
-        return [ [ skeleton.getSkeletonImg(), skeleton.getSkeletonId() ] for skeleton in self.skeletons ]
+        return [ skeleton.getSkeletonImg() for skeleton in self.skeletons ]
 
 
 # returns tuple ( width, height, depth )
 def getBoundingBox( keypoints ):
     maxmins = [ [ 0, c.frameWidth ], [ 0, c.frameHeight ], [ 0, c.frameDepth ] ]
     for keypoint in keypoints:
-        if keypoint[ 2 ] > 0:       # if keypoint detected
+        if keypoint != [ 0.0, 0.0, 0.0 ]:       # if keypoint detected
             for i in range( 3 ):
                 if keypoint[ i ] > maxmins[ i ][ 0 ]:
                     maxmins[ i ][ 0 ] = keypoint[ i ]

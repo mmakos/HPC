@@ -10,7 +10,7 @@ from operator import truediv
 class Skeleton:
     # last keypoints are keypoints of skeleton from previous frame
     # to create new skeleton we have to give actual keypoints of this skeleton
-    # maxDimensions are used to reduce coordinates to [0, 1]
+    # coordinates are normalised to [0, 1]
     def __init__( self, keypoints, skeletonId ):
         self.lastKeypoints = keypoints
         self.id = skeletonId
@@ -35,7 +35,7 @@ class Skeleton:
     def compareSkeleton( self, keypoints, minDelta ):
         sab = []  # Sab - probabilities that point i of a and b is from the same skeleton
         for i, point in enumerate( keypoints ):
-            if point[ 2 ] is 0.0 or keypoints[ i ][ 2 ] is 0.0:     # we count only if points exists
+            if point[ 2 ] != 0.0 or keypoints[ i ][ 2 ] != 0.0:     # we count only if points exists
                 sab.append( 0 )
                 continue
             sab.append( 1 - ( sqrt( pow( point[ 0 ] - self.lastKeypoints[ i ][ 0 ], 2 ) +
@@ -43,6 +43,7 @@ class Skeleton:
                                     pow( point[ 2 ] - self.lastKeypoints[ i ][ 2 ], 2 ) ) / minDelta ) )
             if sab[ i ] < 0:
                 sab[ i ] = 0
+        print( "Sab: " + str( sab ) )
         return np.mean( sab )
 
     def getSkeletonImg( self ):
