@@ -15,7 +15,7 @@ class Skeleton:
         self.lastKeypoints = keypoints
         self.id = skeletonId
         self.skeletonImg = np.zeros( ( c.framesNumber, c.keypointsNumber, 3 ) )
-        self.skeletonImg[ c.framesNumber - 1 ] = normalize( keypoints )
+        self.skeletonImg[ c.framesNumber - 1 ] = normalize( [ [ i[ 0 ], i[ 1 ], i[ 2 ] ] for i in keypoints ] )
 
     # Functions updates skeleton from given frame keypoints (original coordinates)
     def updateSkeleton( self, keypoints ):
@@ -35,15 +35,13 @@ class Skeleton:
     def compareSkeleton( self, keypoints, minDelta ):
         sab = []  # Sab - probabilities that point i of a and b is from the same skeleton
         for i, point in enumerate( keypoints ):
-            if point[ 2 ] != 0.0 or keypoints[ i ][ 2 ] != 0.0:     # we count only if points exists
+            if point[ 3 ] == 0.0 or self.lastKeypoints[ i ][ 3 ] == 0.0:     # we count only if points exists
                 sab.append( 0 )
                 continue
-            sab.append( 1 - ( sqrt( pow( point[ 0 ] - self.lastKeypoints[ i ][ 0 ], 2 ) +
-                                    pow( point[ 1 ] - self.lastKeypoints[ i ][ 1 ], 2 ) +
-                                    pow( point[ 2 ] - self.lastKeypoints[ i ][ 2 ], 2 ) ) / minDelta ) )
+            sab.append( 1 - ( sqrt( pow( int( point[ 0 ] - self.lastKeypoints[ i ][ 0 ] ), 2 ) +
+                                    pow( int( point[ 1 ] - self.lastKeypoints[ i ][ 1 ] ), 2 ) ) / minDelta ) )
             if sab[ i ] < 0:
                 sab[ i ] = 0
-        print( "Sab: " + str( sab ) )
         return np.mean( sab )
 
     def getSkeletonImg( self ):

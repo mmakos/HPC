@@ -26,7 +26,7 @@ class Frame:
         if not humans:
             return []
         for human in humans:
-            if sum( 1 for kp in human if kp != [ 0.0, 0.0, 0.0 ] ) >= c.minDetectedKeypoints:
+            if sum( 1 for kp in human if kp[ 3 ] != 0.0 ) >= c.minDetectedKeypoints:
                 self.proceedHuman( human, newSkeletons )
             else:
                 newSkeletons.append( None )
@@ -42,9 +42,7 @@ class Frame:
     def proceedHuman( self, human, newSkeletons ):
         sameSkeletonProb = []            # probability, that human is 'i' skeleton
         minDelta = getMinDelta( getBoundingBox( human ) )
-        print( "\nminDelta = " + str( minDelta ) )
         for skeleton in self.skeletons:
-            print( "Comparing to skeleton " + str( skeleton.getSkeletonId() ) )
             sameSkeletonProb.append( skeleton.compareSkeleton( human, minDelta ) )
         if len( sameSkeletonProb ) != 0:
             maxProb = max( sameSkeletonProb )
@@ -69,16 +67,25 @@ class Frame:
     def getSkeletons( self, humans ):
         newSkeletons = []
         for human in humans:
-            self.proceedHuman( human, newSkeletons )
-        self.skeletons = newSkeletons
-        return [ skeleton.getSkeletonImg() for skeleton in self.skeletons ]
+            if sum( 1 for kp in human if kp[ 3 ] != 0.0 ) >= c.minDetectedKeypoints:
+                self.proceedHuman( human, newSkeletons )
+            else:
+                newSkeletons.append( None )
+        self.skeletons = [ s for s in newSkeletons if s is not None ]
+        images = []
+        for skeleton in self.skeletons:
+            if skeleton is not None:
+                images.append( [ skeleton.getSkeletonImg(), skeleton.getSkeletonId() ] )
+            else:
+                images.append( None )
+        return images
 
 
 # returns tuple ( width, height, depth )
 def getBoundingBox( keypoints ):
     maxmins = [ [ 0, c.frameWidth ], [ 0, c.frameHeight ], [ 0, c.frameDepth ] ]
     for keypoint in keypoints:
-        if keypoint != [ 0.0, 0.0, 0.0 ]:       # if keypoint detected
+        if keypoint[ 3 ] != 0.0:       # if keypoint detected
             for i in range( 3 ):
                 if keypoint[ i ] > maxmins[ i ][ 0 ]:
                     maxmins[ i ][ 0 ] = keypoint[ i ]
@@ -90,6 +97,5 @@ def getBoundingBox( keypoints ):
 
 
 def getMinDelta( boundingBox ):
-    return c.minDeltaCoefficient * sqrt( pow( boundingBox[ 0 ], 2 ) +
-                                         pow( boundingBox[ 1 ], 2 ) +
-                                         pow( boundingBox[ 2 ], 2 ) )
+    return c.maxDeltaCoefficient * sqrt( pow( boundingBox[ 0 ], 2 ) +
+                                         pow( boundingBox[ 1 ], 2 ) )
