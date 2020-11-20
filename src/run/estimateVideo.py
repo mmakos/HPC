@@ -157,13 +157,13 @@ if __name__ == '__main__':
 
         if not args.view:
             frameRGB, poses, humans = proceedFrame()
-            for j, human in enumerate( humans ):
-                try:
+            try:
+                for j, human in enumerate( humans ):
                     print( "skeleton: " + str( poses[ j ][ 1 ] ) + "\tposes: " + str( poses[ j ][ 0 ] ) )
                     display.displayPose( frameRGB, human, str( poses[ j ][ 1 ] ) + ": " +
                                          c.poses[ np.argmax( poses[ j ][ 0 ] ) ] + f" - { int( np.max( poses[ j ][ 0 ] ) * 100 ) }%" )
-                except:
-                    pass
+            except:
+                pass
 
         display.displayFrameTime( frameRGB, time() - t )
         t = time()

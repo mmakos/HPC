@@ -6,6 +6,7 @@ pip install sklearn
 pip install numpy
 pip install keyboard
 pip install primesense
+pip install pyrealsense2
 cd externals
 git clone --recursive -j8 -o "openpose" https://github.com/CMU-Perceptual-Computing-Lab/openpose.git
 echo "You have to build openpose with cmake."

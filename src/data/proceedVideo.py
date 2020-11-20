@@ -3,7 +3,6 @@ import numpy as np
 import cv2
 import sys
 import os
-from primesense import openni2
 from time import time
 
 sys.path.insert( 1, '../func' )
@@ -20,10 +19,9 @@ import pyopenpose as op
 
 def parseArgs():
     parser = argparse.ArgumentParser()
-    parser.add_argument( "video_path", type=str, help="Path to file you want to proceed" )
-    parser.add_argument( "-d", "--depth", help="Depth frames will be proceeded as well", action="store_true" )
-    parser.add_argument( "-v", "--view", help="View only mode", action="store_true" )
-    parser.add_argument( "-p", "--proceed", help="Frames will be converted to skeleton image and saved in given path" )
+    parser.add_argument( "video_path", type=str, help="Path to file you want to proceed relative to /data." )
+    parser.add_argument( "-v", "--view", help="View only mode.", action="store_true" )
+    parser.add_argument( "-p", "--proceed", help="Frames will be converted to skeleton image and saved in given path." )
     return parser.parse_known_args()
 
 
@@ -60,24 +58,57 @@ def initFrameDimensions():
     c.depthHeight, c.depthWidth = frameD.shape
 
 
-def getColorFrame():
-    if oni:
+def getStreams():
+    global vType, colorStream, depthStream, vid
+    # OpenNI file - universal RGBD stream
+    if args.video_path[ -4: ] == ".oni":
+        vType = 'oni'
+        print( "OpenNI file" )
+        from primesense import openni2
+        vid = openni2.Device.open_file( args.video_path )
+        colorStream = vid.create_color_stream()
+        colorStream.start()
+        depthStream = vid.create_depth_stream()
+        depthStream.start()
+    # RealSense video / tiago video
+    elif args.video_path[ -4: ] == ".bag":
+        vType = 'bag'
+        print( "RealSense file" )
+        import pyrealsense2 as rs
+        vid = rs.pipeline()
+        conf = rs.config()
+        rs.config.enable_device_from_file( conf, args.video_path )
+        conf.enable_stream( rs.stream.depth )
+        conf.enable_stream( rs.stream.color )
+        vid.start( conf )
+    # RGB and depth image video (net datasets and tiago recorded to images)
+    elif args.video_path[ -1 ] == "/" or args.video_path[ -1 ] == "\\":
+        vType = 'img'
+    # Regular video
+    else:
+        vType = 'reg'
+        print( "Regular video" )
+        vid = cv2.VideoCapture( args.video_path )
+
+
+def getFrame():
+    if vType == 'bag':
+        frames = vid.wait_for_frames()
+        frameDepth = np.asanyarray( frames.get_depth_frame().get_data() )
+        frameColor = cv2.cvtColor( np.asanyarray( frames.get_color_frame().get_data() ), cv2.COLOR_BGR2RGB )
+    elif vType == 'oni':
         frameColor = colorStream.read_frame()
         frameColor = np.array( ( frameColor.height, frameColor.width, 3 ), dtype=np.uint8,
                                buffer=frameColor.get_buffer_as_uint8() ) / 255
-    else:
-        ret, frameColor = vid.read()
-    return frameColor
-
-
-def getDepthFrame():
-    if not args.depth:
-        frameDepth = np.zeros( ( c.depthHeight, c.depthWidth ) )
-    else:
         frameDepth = depthStream.read_frame()
-        frameDepth = np.array( ( frameDepth.height, frameDepth.width ), dtype=np.uint16,
+        frameDepth = np.array( (frameDepth.height, frameDepth.width), dtype=np.uint16,
                                buffer=frameDepth.get_buffer_as_uint16() )
-    return frameDepth
+    elif vType == 'reg':
+        frameDepth = np.zeros( (c.depthHeight, c.depthWidth) )
+        ret, frameColor = vid.read()
+    else:
+        raise TypeError( "Unsupported video type.")
+    return frameColor, frameDepth
 
 
 def proceedFrame():
@@ -109,29 +140,13 @@ if __name__ == '__main__':
             pass
 
     if not os.path.isfile( args.video_path ):
-        args.video_path = "../../data/videos/" + args.video_path
+        args.video_path = "../../data/" + args.video_path
         if not os.path.isfile( args.video_path ):
-            print( "No video found. Please make sure you typed correct path to your video." )
             print( "No video found. Please make sure you typed correct path to your video." )
             exit()
 
-    # OpenNI file
-    if args.video_path[ -4: ] == ".oni":
-        oni = True
-        print( "OpenNI file" )
-        vid = openni2.Device.open_file( args.video_path )
-        colorStream = vid.create_color_stream()
-        colorStream.start()
-        framesNumber = colorStream.get_number_of_frames()
-        if args.depth:
-            depthStream = vid.create_depth_stream()
-            depthStream.start()
-    # Regular video
-    else:
-        oni = False
-        print( "Regular video" )
-        vid = cv2.VideoCapture( args.video_path )
-        framesNumber = int( vid.get( cv2.CAP_PROP_FRAME_COUNT ) )
+    global vType, colorStream, depthStream, vid, framesNumber
+    getStreams()
 
     # initialise openPose and Frame class
     if not args.view:
@@ -140,9 +155,8 @@ if __name__ == '__main__':
 
     t = time()
     # main loop
-    for i in range( framesNumber ):
-        frameRGB = getColorFrame()
-        frameD = getDepthFrame()
+    for i in range( sys.maxsize ):
+        frameRGB, frameD = getFrame()
         if i is 0:
             initFrameDimensions()
 

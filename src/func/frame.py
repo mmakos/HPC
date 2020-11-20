@@ -23,6 +23,8 @@ class Frame:
                 c.frameTime = c.maxFrameTime
             self.prevTime = time()
         newSkeletons = []
+        if not humans:
+            return []
         for human in humans:
             if sum( 1 for kp in human if kp != [ 0.0, 0.0, 0.0 ] ) >= c.minDetectedKeypoints:
                 self.proceedHuman( human, newSkeletons )
