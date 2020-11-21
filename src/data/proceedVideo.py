@@ -138,12 +138,14 @@ def proceedFrame():
     # getSkeletons gives for every human skeleton image
     image = datum.cvOutputData  # image is frame with drawn skeleton
 
+    # map to RGBD
+    rgbdKeypoints = mapToRGBD( datum.poseKeypoints, frameD )
     # convert frame to skeleton image
     skeletons = []
     if args.proceed:
-        skeletons = frame.getSkeletons( mapToRGBD( datum.poseKeypoints, frameD ) )
+        skeletons = frame.getSkeletons( rgbdKeypoints )
 
-    return image, skeletons, datum.poseKeypoints
+    return image, skeletons, rgbdKeypoints
 
 
 if __name__ == '__main__':
@@ -178,7 +180,7 @@ if __name__ == '__main__':
     for i in range( sys.maxsize ):
         try:
             frameRGB, frameD = getFrame()
-        except:
+        except FileNotFoundError:
             break
         if i is 0:
             initFrameDimensions()
@@ -198,8 +200,7 @@ if __name__ == '__main__':
         cv2.imshow( "Video frame", frameRGB )
         cv2.imshow( "Depth frame", frameD )
         if cv2.waitKey( 1 ) & 0xFF == ord( 'q' ):
-
             break
 
-    print( "Finished.\nWritten", savedImgNumber, "files." )
+    print( "Written", savedImgNumber, "skeleton images." )
     print( "Proceeded", i, "frames." )

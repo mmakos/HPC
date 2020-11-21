@@ -30,3 +30,22 @@ poses = (
 
 # training
 batchSize = 8
+
+# used for estimation depth of not detected keypoints on depth canal
+connections = (
+    [ 1 ],
+    ( 0, 2, 5, 8 ),
+    ( 1, 3 ),
+    ( 2, 4 ),
+    [ 3 ],
+    ( 1, 6 ),
+    ( 5, 7 ),
+    [ 6 ],
+    ( 1, 9, 12 ),
+    ( 8, 10 ),
+    ( 9, 11 ),
+    [ 10 ],
+    ( 8, 13 ),
+    ( 12, 14 ),
+    [ 13 ]
+)

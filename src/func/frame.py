@@ -14,8 +14,8 @@ class Frame:
         self.live = live
         self.prevTime = time()
 
-    # function returns probabilities list of each pose for each given human
-    # humans is list of humans with list of keypoints for every human
+    # function returns probabilities list of each pose for each given human (with skeleton id)
+    # humans is list of humans with list of keypoints for every human and probability of this keypoint (0, when it's lower than threshold)
     def proceedFrame( self, humans ):
         if self.live:
             c.frameTime = self.prevTime - time()
@@ -26,10 +26,7 @@ class Frame:
         if not humans:
             return []
         for human in humans:
-            if sum( 1 for kp in human if kp[ 3 ] != 0.0 ) >= c.minDetectedKeypoints:
-                self.proceedHuman( human, newSkeletons )
-            else:
-                newSkeletons.append( None )
+            self.proceedHuman( human, newSkeletons )
         self.skeletons = [ s for s in newSkeletons if s is not None ]
         poses = []
         for skeleton in newSkeletons:
@@ -41,7 +38,8 @@ class Frame:
 
     def proceedHuman( self, human, newSkeletons ):
         sameSkeletonProb = []            # probability, that human is 'i' skeleton
-        minDelta = getMinDelta( getBoundingBox( human ) )
+        bb = getBoundingBox( human )
+        minDelta = getMinDelta( bb )
         for skeleton in self.skeletons:
             sameSkeletonProb.append( skeleton.compareSkeleton( human, minDelta ) )
         if len( sameSkeletonProb ) != 0:
@@ -50,27 +48,23 @@ class Frame:
             maxProb = 0
         if maxProb >= c.probThreshold:      # skeletons are the same human
             i = sameSkeletonProb.index( maxProb )
-            self.skeletons[ i ].updateSkeleton( human )     # update skeleton
+            self.skeletons[ i ].updateSkeleton( human, bb )     # update skeleton
             newSkeletons.append( self.skeletons[ i ] )      # add skeleton to new skeletons
             self.skeletons.pop( i )                         # skeleton cannot be compared again
         else:
-            newSkeletons.append( Skeleton( human, self.lastSkeletonId ) )        # make new skeleton if there is no similar skeleton
+            newSkeletons.append( Skeleton( human, self.lastSkeletonId, bb ) )        # make new skeleton if there is no similar skeleton
             self.lastSkeletonId = self.lastSkeletonId + 1
 
     # functions classify pose and returns probabilities of poses
     def classifyPose( self, skeleton ):
         return self.model.predict( ( cv2.rotate( skeleton.getSkeletonImg(), cv2.ROTATE_90_CLOCKWISE ) * 255 ).reshape( -1, c.keypointsNumber, c.framesNumber, 3 ) )
-        # return [ 1., 0., 0., 0., 0. ]
 
     # function takes detected humans keypoints and return skeleton image for each human
     # this is equivalent to proceedFrame, but for creating dataset
     def getSkeletons( self, humans ):
         newSkeletons = []
         for human in humans:
-            if sum( 1 for kp in human if kp[ 3 ] != 0.0 ) >= c.minDetectedKeypoints:
-                self.proceedHuman( human, newSkeletons )
-            else:
-                newSkeletons.append( None )
+            self.proceedHuman( human, newSkeletons )
         self.skeletons = [ s for s in newSkeletons if s is not None ]
         images = []
         for skeleton in self.skeletons:
@@ -81,7 +75,7 @@ class Frame:
         return images
 
 
-# returns tuple ( width, height, depth )
+# returns list [ [ maxW, minW ], [ maxH, minH ], [ maxD, minD ] ]
 def getBoundingBox( keypoints ):
     maxmins = [ [ 0, c.frameWidth ], [ 0, c.frameHeight ], [ 0, c.frameDepth ] ]
     for keypoint in keypoints:
@@ -91,11 +85,9 @@ def getBoundingBox( keypoints ):
                     maxmins[ i ][ 0 ] = keypoint[ i ]
                 if keypoint[ i ] < maxmins[ i ][ 1 ]:
                     maxmins[ i ][ 1 ] = keypoint[ i ]
-    return ( maxmins[ 0 ][ 0 ] - maxmins[ 0 ][ 1 ],
-             maxmins[ 1 ][ 0 ] - maxmins[ 1 ][ 1 ],
-             maxmins[ 2 ][ 0 ] - maxmins[ 2 ][ 1 ] )
+    return maxmins
 
 
 def getMinDelta( boundingBox ):
-    return c.maxDeltaCoefficient * sqrt( pow( boundingBox[ 0 ], 2 ) +
-                                         pow( boundingBox[ 1 ], 2 ) )
+    return c.maxDeltaCoefficient * sqrt( pow( boundingBox[ 0 ][ 0 ] - boundingBox[ 0 ][ 1 ], 2 ) +
+                                         pow( boundingBox[ 1 ][ 0 ] - boundingBox[ 1 ][ 1 ], 2 ) )

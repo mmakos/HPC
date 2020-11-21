@@ -1,5 +1,6 @@
 import cv2
 import consts as c
+import frame
 
 
 def displayFrameTime( img, sec ):
@@ -7,14 +8,14 @@ def displayFrameTime( img, sec ):
 
 
 def displayPose( img, keypoints, pose ):
-    x = int( min( i for i in keypoints[ :, 0 ] if i >= c.keypointThreshold ) ) - 10
-    y = int( min( i for i in keypoints[ :, 1 ] if i >= c.keypointThreshold ) ) - 10
-    x2 = int( max( i for i in keypoints[ :, 0 ] if i >= c.keypointThreshold ) ) + 10
-    y2 = int( max( i for i in keypoints[ :, 1 ] if i >= c.keypointThreshold  ) ) + 10
-    if y < 0:
-        y = 0
-    if x < 0:
-        x = 0
+    keypoints = [ i for i in keypoints if i[ 3 ] >= c.keypointThreshold ]
+    bb = frame.getBoundingBox( keypoints )
+    x = bb[ 0 ][ 1 ] - 10
+    y = bb[ 1 ][ 1 ] - 10
+    x2 = bb[ 0 ][ 0 ] + 10
+    y2 = bb[ 1 ][ 0 ] + 10
+    x = 0 if x < 0 else x
+    y = 0 if y < 0 else y
     cv2.rectangle( img, ( x, y ), ( x2, y2 ), ( 0, 255, 0 ), 2 )
     ( textW, textH ) = cv2.getTextSize( pose, cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, thickness=2 )[ 0 ]
     cv2.rectangle( img, ( x, y ), ( x + textW + 2, y + textH + 2 ), ( 0, 255, 0 ), cv2.FILLED )

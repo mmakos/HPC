@@ -4,29 +4,30 @@
 import numpy as np
 import consts as c
 from math import sqrt
-from operator import truediv
 
 
 class Skeleton:
     # last keypoints are keypoints of skeleton from previous frame
     # to create new skeleton we have to give actual keypoints of this skeleton
     # coordinates are normalised to [0, 1]
-    def __init__( self, keypoints, skeletonId ):
+    def __init__( self, keypoints, skeletonId, boundingBox ):
         self.lastKeypoints = keypoints
         self.id = skeletonId
+        self.boundingBox = boundingBox  # bounding box of last keypoints set (for faster operations)
         self.skeletonImg = np.zeros( ( c.framesNumber, c.keypointsNumber, 3 ) )
-        self.skeletonImg[ c.framesNumber - 1 ] = normalize( [ [ i[ 0 ], i[ 1 ], i[ 2 ] ] for i in keypoints ] )
+        self.skeletonImg[ c.framesNumber - 1 ] = normalize( keypoints, boundingBox )
 
     # Functions updates skeleton from given frame keypoints (original coordinates)
-    def updateSkeleton( self, keypoints ):
+    def updateSkeleton( self, keypoints, boundingBox ):
         self.lastKeypoints = keypoints
+        self.boundingBox = boundingBox
         self.updateImg()
 
     def updateImg( self ):
         # all columns (frames) need to be swap left
         for i in range( c.framesNumber - 1 ):
             self.skeletonImg[ i ] = self.skeletonImg[ i + 1 ]
-        self.skeletonImg[ c.framesNumber - 1 ] = normalize( self.lastKeypoints )   # normalization
+        self.skeletonImg[ c.framesNumber - 1 ] = normalize( self.lastKeypoints, self.boundingBox )   # normalization
 
     # function returns probability, that skeleton a i b is the same skeleton
     # keypoints - skeleton A
@@ -51,5 +52,12 @@ class Skeleton:
         return self.id
 
 
-def normalize( keypoints ):
-    return [ list( map( truediv, kp, [ c.frameWidth, c.frameHeight, c.frameDepth ] ) ) for kp in keypoints ]
+def normalize( keypoints, boundingBox ):
+    bbDims = [ boundingBox[ 0 ][ 0 ] - boundingBox[ 0 ][ 1 ],
+               boundingBox[ 1 ][ 0 ] - boundingBox[ 1 ][ 1 ],
+               boundingBox[ 2 ][ 0 ] - boundingBox[ 2 ][ 1 ] ]
+
+    return [ [ ( i[ 0 ] - boundingBox[ 0 ][ 1 ] ) / bbDims[ 0 ],
+               ( i[ 1 ] - boundingBox[ 1 ][ 1 ] ) / bbDims[ 1 ],
+               ( i[ 2 ] - boundingBox[ 2 ][ 1 ] ) / bbDims[ 2 ] ]
+             for i in keypoints ]
