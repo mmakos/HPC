@@ -3,10 +3,10 @@ import numpy as np
 import cv2
 import sys
 import os
-from primesense import openni2
 from time import time
 
-# os.environ[ 'TF_CPP_MIN_LOG_LEVEL' ] = '3'
+os.environ[ 'TF_CPP_MIN_LOG_LEVEL' ] = '3'
+print( "Loading tensorflow...")
 import tensorflow as tf
 
 sys.path.insert( 1, '../func' )
@@ -23,12 +23,11 @@ import pyopenpose as op
 
 def parseArgs():
     parser = argparse.ArgumentParser()
-    parser.add_argument( "video_path", type=str, help="Path to file you want to estimate." )
+    parser.add_argument( "-v", "--video", type=str, help="Name of video you want to estimate relative to /data/videos." )
     parser.add_argument( "-m", "--model", default="5static", help="Path to model relative to /data/models." )
     parser.add_argument( "-w", "--write_name", help="Name of output video. If none, video will not be saved." )
-    parser.add_argument( "-d", "--depth", help="Depth frames will be used to estimation as well.", action="store_true" )
-    parser.add_argument( "-v", "--view", help="View only mode.", action="store_true" )
-    parser.add_argument( "-p", "--proceed", help="Pose will be estimated.", action="store_true" )
+    parser.add_argument( "-P", "--preview", help="View only mode.", action="store_true" )
+    parser.add_argument( "-p", "--pose", help="Pose will be estimated.", action="store_true" )
     parser.add_argument( "-g", "--gpu_mode", help="Pose classification will be executed on GPU, but GPU can be out of memory", action="store_true" )
     return parser.parse_known_args()
 
@@ -63,48 +62,59 @@ def initOpenPose():
 
 
 def initFrameDimensions():
-    c.frameHeight, c.frameWidth, dim = frameRGB.shape
-    c.depthHeight, c.depthWidth = frameD.shape
+    try:
+        c.frameHeight, c.frameWidth, dim = frameRGB.shape
+        c.depthHeight, c.depthWidth = frameD.shape
+    except:
+        raise TypeError( "Invalid frame." )
 
 
 def getModel():
-    if not args.gpu:
-        physical_devices = tf.config.list_physical_devices('GPU')
+    if not args.gpu_mode:
+        tf.config.list_physical_devices( 'GPU' )
         try:
             # Disable all GPUS
-            tf.config.set_visible_devices([], 'GPU')
+            tf.config.set_visible_devices( [], 'GPU' )
             visible_devices = tf.config.get_visible_devices()
             for device in visible_devices:
                 assert device.device_type != 'GPU'
         except:
             # Invalid device or cannot modify virtual devices once initialized.
             pass
+    print( "Getting model..." )
     mod = tf.keras.models.load_model( '../../data/models/' + args.model )
     print( "Model " + args.model + " loaded." )
-    # print( mod.summary() )
+    print( mod.summary() )
     return mod
 
 
 def getStreams():
     global vType, colorStream, depthStream, vid, framesNumber
-    if args.video_path[ -4: ] == ".oni":
+    if not args.video:      # stream
+        vType = 'rs'
+        print( "Opening RealSense stream..." )
+        import pyrealsense2 as rs
+        vid = rs.pipeline()
+        vid.start()
+        framesNumber = "Infinite number of"
+    elif args.video[ -4: ] == ".oni":
         vType = 'oni'
-        print( "OpenNI file" )
+        print( "Opening OpenNI file..." )
         from primesense import openni2
-        vid = openni2.Device.open_file( args.video_path )
+        vid = openni2.Device.open_file( args.video )
         colorStream = vid.create_color_stream()
         colorStream.start()
         depthStream = vid.create_depth_stream()
         depthStream.start()
         framesNumber = colorStream.get_number_of_frames()
     # RealSense video / tiago video
-    elif args.video_path[ -4: ] == ".bag":
+    elif args.video[ -4: ] == ".bag":
         vType = 'bag'
-        print( "RealSense file" )
+        print( "Opening ros file (RealSense)..." )
         import pyrealsense2 as rs
         vid = rs.pipeline()
         conf = rs.config()
-        rs.config.enable_device_from_file( conf, args.video_path, repeat_playback=False )
+        rs.config.enable_device_from_file( conf, args.video, repeat_playback=False )
         conf.enable_stream( rs.stream.depth )
         conf.enable_stream( rs.stream.color )
         profile = vid.start( conf )
@@ -112,27 +122,30 @@ def getStreams():
         playback.set_real_time( False )
         framesNumber = "Unknown quantity of"
     # RGB and depth image video (net datasets and tiago recorded to images)
-    elif args.video_path[ -1 ] == "/" or args.video_path[ -1 ] == "\\":
+    elif args.video[ -1 ] == "/" or args.video[ -1 ] == "\\":
         vType = 'img'
-        print( "Video from images." )
-        vid = sorted( os.listdir( args.video_path ) )  # vid is array of file names
+        print( "Opening video from images..." )
+        vid = sorted( os.listdir( args.video ) )  # vid is array of file names
         framesNumber = len( vid )
         colorStream = 0
         depthStream = 1
     # Regular video
-    else:
+    elif args.video[ -4: ] == ".mp4" or args.video[ -4: ] == ".avi" or args.video[ -4: ] == ".mov":
         vType = 'reg'
-        print( "Regular video" )
-        vid = cv2.VideoCapture( args.video_path )
+        print( "Opening regular video" )
+        vid = cv2.VideoCapture( args.video )
         framesNumber = int( vid.get( cv2.CAP_PROP_FRAME_COUNT ) )
+    else:
+        raise TypeError( "Unsupported video type." )
+    print( "Opened." )
 
 
 # throws EOFError when end of video
 def getFrame():
     global colorStream, depthStream
-    if vType == 'bag':
+    if vType == 'bag' or vType == 'rs':
         try:
-            frames = vid.poll_for_frames()
+            frames = vid.wait_for_frames()
             frameDepth = np.asanyarray( frames.get_depth_frame().get_data() )
             frameColor = cv2.cvtColor( np.asanyarray( frames.get_color_frame().get_data() ), cv2.COLOR_BGR2RGB )
         except RuntimeError:
@@ -146,8 +159,8 @@ def getFrame():
                                buffer=frameDepth.get_buffer_as_uint16() )
     elif vType == 'img':
         try:
-            frameColor = cv2.imread( args.video_path + vid[ colorStream ] )
-            frameDepth = cv2.imread( args.video_path + vid[ depthStream ], cv2.IMREAD_ANYDEPTH )
+            frameColor = cv2.imread( args.video + vid[ colorStream ] )
+            frameDepth = cv2.imread( args.video + vid[ depthStream ], cv2.IMREAD_ANYDEPTH )
             colorStream = colorStream + 2
             depthStream = depthStream + 2
         except IndexError:
@@ -156,7 +169,7 @@ def getFrame():
         frameDepth = np.zeros( ( c.depthHeight, c.depthWidth ) )
         ret, frameColor = vid.read()
     else:
-        raise TypeError( "Unsupported video type.")
+        raise TypeError( "Invalid video format." )
     return frameColor, frameDepth
 
 
@@ -172,7 +185,7 @@ def proceedFrame():
     rgbdKeypoints = mapToRGBD( datum.poseKeypoints, frameD )
     # convert frame to skeleton image
     pos = []
-    if args.proceed:
+    if args.pose:
         pos = frame.proceedFrame( rgbdKeypoints )
 
     return image, pos, rgbdKeypoints
@@ -181,13 +194,13 @@ def proceedFrame():
 if __name__ == '__main__':
     allArgs = parseArgs()
     args = allArgs[ 0 ]
-    dataPath = None
-    out = None
+    dataPath = out = None
 
-    args.video_path = "../../data/videos/" + args.video_path
-    if not os.path.isfile( args.video_path ) and not os.path.isdir( args.video_path ):
-        print( "No video found. Please make sure you typed correct path to your video." )
-        exit()
+    if args.video is not None:
+        args.video = "../../data/videos/" + args.video
+        if not os.path.isfile( args.video ) and not os.path.isdir( args.video ):
+            print( "No video found. Please make sure you typed correct path to your video." )
+            exit()
 
     if args.write_name is not None:
         args.write_name = "../../data/videos/" + args.write_name + ".mp4"
@@ -196,7 +209,7 @@ if __name__ == '__main__':
     getStreams()
     print( framesNumber, "frames to proceed." )
 
-    if not args.view:
+    if not args.preview:
         opWrapper = initOpenPose()
         frame = Frame( getModel() )
 
@@ -206,26 +219,24 @@ if __name__ == '__main__':
         try:
             frameRGB, frameD = getFrame()
         except EOFError:
+            print( "No more frames." )
             break
         if i is 0:
             initFrameDimensions()
             if args.write_name is not None:
                 out = cv2.VideoWriter( args.write_name, cv2.VideoWriter_fourcc( *'mp4v' ), 30, ( c.frameWidth, c.frameHeight ) )
 
-        if not args.view:
+        if not args.preview:
             frameRGB, poses, humans = proceedFrame()
-            try:
-                for j, human in enumerate( humans ):
-                    # print( "skeleton: " + str( poses[ j ][ 1 ] ) + "\tposes: " + str( poses[ j ][ 0 ] ) )
-                    display.displayPose( frameRGB, human, str( poses[ j ][ 1 ] ) + ": " +
-                                         c.poses[ np.argmax( poses[ j ][ 0 ] ) ] + f" - { int( np.max( poses[ j ][ 0 ] ) * 100 ) }%" )
-            except:
-                pass
+            for j, human in enumerate( humans ):
+                display.displayPose( frameRGB, human, str( poses[ j ][ 1 ] ) + ": " +
+                                     c.poses[ np.argmax( poses[ j ][ 0 ] ) ] + f" - { int( np.max( poses[ j ][ 0 ] ) * 100 ) }%" )
 
         display.displayFrameTime( frameRGB, time() - t )
         t = time()
 
         cv2.imshow( "Video frame", frameRGB )
+        cv2.imshow( "Depth frame", frameD )
         if out is not None:
             out.write( frameRGB )
         if cv2.waitKey( 1 ) & 0xFF == ord( 'q' ):

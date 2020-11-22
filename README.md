@@ -10,8 +10,8 @@ Then, based on classified poses we can monitor human movement and e.g. detect fa
 Solution is based on body keypoints which are detected using [OpenPose](https://github.com/CMU-Perceptual-Computing-Lab/openpose) library.
 System estimates human body's keypoints with OpenPose and converts them into small abstract image which represents theirs positions in 3D space trough multiple frames (so it's in facet 4D space).
 Columns of this image represents sequent frames, rows represents different keypoints and color represent 3D position (B-x, G-y, R-D).
-So example image for 15 keypoints and only RGB camera looks like:<br>
-<img src="https://lh3.googleusercontent.com/fife/ABSRlIpLfqeo1-oiIlSGdv8EDmmfh5r3KCjr4W0qMHZIiHAreUn6tMpD96VcIdcqVU9amQwbAn4iDwQvvMG8mVGdKMfTx3tF07r_IjQf_oADpRYe4_tpGfiAOgffmZPLXOP_DQgj30gr4ByUtyEUTv1sbJXLF4xCBNWCXpPVx2xghJEe7t8_I9YNaSuRcbx9oWL8bot5GG3zDYWBXrJA0QougJn3X9HiA6RB3vIrUWdqbRZ02qnHIdcOopCi9_4Yyq_LXzaLTMtyRgkcGqzUt2o_FlzgxPRuo-0UbjUBo5mc28aYOSUckhDA_cguR6Y28VpKSPwXym4gwX9xTX3UsSVJfEPCQIehelRS5Reh6p_sbtCrC__7Pqa_potvjc7YY0u4ofoLgRvugfQC4Oko1Sf9iXskpB_K7yPy2bu5CjERIHPf9Kp2KLYTkPf7t84igcF5LEr7ssXijWUVPmawKkqQ6K8PwxOx44qt_pqipKR4xyzT97qsaVRG9DLVFW4A5zENzjs81el3JpjW2TOfjIxAvzAsxFWSdvbk5ADMzWvZUO_vqNLhxdsd-HzO4ZtTQo8WcANZl9AdDxhZyBaWwywu-I5q27E6EFucIMhYHSnZ6vBvoth54YxAIDeyyW6Pk1BRDXP0iAKH7cKjZFzmqr8zlSKK8N6POOMn6o7zwmGgB_PhMfloNu9rFWDCOjKro-I2rY9HrUtulEGPqRhaGhv33AL0pcNIz-dFxA=w1278-h949-ft" alt="Example coded keypoints image" width="320"/>
+So example image for 15 keypoints, 32 frame, static pose with RGBD camera looks like:<br>
+<img src="samples/f44s0.png" alt="Example coded keypoints image" width="320"/>
 <br>Black fields represents not detected keypoints.
 
 ## Requirements
@@ -20,13 +20,38 @@ For now:
 * Python 3 (I work with 3.7 and I don't support other versions for now (e.g. OpenPose didn't work for me with Python 3.9) ) with libraries:
     * tensorflow
     * opencv-python
-    * primesense
+    * primesense (for *.oni* files and some RGBD sensors with OpenNI 2 support)
+    * pyrealsense2 (for *.bag* files and RealSense sensor)
     * keyboard
     * numpy (comes with opencv)<br>
       *You can satisfy all above requirements by running script `requirements.bat`*
 * For working with robot camera - Orbbec Astra SDK - OpenNI in folder `/externals`
+* For working with RealSense camera - Realsense SDK.
 
 ## Working with (available modules)
+For now I implemented modules to create datasets from saved RGBD video, training net and pose classification.
+
+Dataset creating is done by estimation skeletons with OpenPose and then converting it to coded skeleton images with my algorithms (*proceedVideo* module).
+Then a set of created images can be edited by hand by filtering wrong images, splitting it to labels and augmenting. Then final dataset is created to *.npz* file (compressed numpy arrays) ready to train (*createDataset* module).
+Net training is done with *train.py* module.
+Then you can classify pose with *estimateVideo.py*.
+
+Both *estimateVideo.py* and *proceedVideo.py* modules works with *.bag* file (any RGBD stream saved by rospy library (used for RealSense sensor, by it can be used also for Tiago robot sensor), *.oni* files (not tested yet, doubt it will be used), regular video file (no depth frames though) and finally with images folder (images has to have on 4th position from end letter d for depth and c for color frame and has to be in alphabetical order).
+*estimateVideo.py* module works with RealSense live stream as well.
+
+Usage of above modules is described below. 
+### Running
+#### estimateVideo.py
+Module loads video and estimates poses for every human in every frame.
+
+Usage: `python proceedVideo.py -v video -m model -w write_name -P -p -g`:
+* *video* - path to your video relative to running folder or to `/data/videos` folder. If none, program will try to run camera stream.
+* *model* - name of model you want to load relative to `/data/models` folder.
+* *write_name* - name of output video (if you want to save proceeded video).
+* *-P* - preview mode - select this option when you only want to view your video (without estimating skeletons. Useful for viewing *.oni* files.
+* *-p* - proceed mode - select this option when you want estimate poses.
+* *-g* - gpu mode - tensorflow will work on GPU. This is not default setting, because OpenPose use a lot of GPU memory, so it cannot run together with tensorflow.
+
 ### Data processing
 #### recordVideo.py
 Module records stream of RGBD camera and writes output to *.oni* file. Output video will be stored in `/data/videos`.
@@ -40,7 +65,7 @@ Module also shows video with estimated skeletons.
 
 Usage: `python proceedVideo.py video_path -d -v -p proceed`:
 * video_path - path to your video relative to running folder or to `/data/video` folder.
-* -d - if this option is selected, module will proceed depth frames as well. Select this option only when you proceed *.oni* file.
+* -w - name of output video (if you want to save proceeded video). Useful to know which coded skeleton images correspond to which frame in proceeded video.
 * -v - view mode. Select this option when you only want to view your video (without estimating skeletons. Useful for viewing *.oni* files.
 * proceed - proceed mode. Select this option when you want to code estimated skeletons to images. *Proceed* is name of folder where images will be saved (relative to `/data/images/` folder).
 
@@ -80,17 +105,6 @@ Usage: `python train.py dataset_name -m model_name -o output_model`
 * dataset_name - name of data set on which you want to train your model.
 * model_name - name of model, which will be opened or created if no such model exists
 * output_model - name of output model, if model with that name exists it will be overwritten. If this arg is not specified model won't be saved.
-
-### Running
-#### estimateVideo.py
-Module loads video and estimates poses for every human in every frame.
-
-Usage: `python proceedVideo.py video_path -m model -d -v -p`:
-* video_path - path to your video relative to running folder or to `/data/video` folder.
-* model - name of model you want to load relative to `/data/models` folder.
-* -d - if this option is selected, module will proceed depth frames as well. Select this option only when you proceed *.oni* file.
-* -v - view mode. Select this option when you only want to view your video (without estimating skeletons. Useful for viewing *.oni* files.
-* -p - proceed mode. Select this option when you want estimate poses.
 
 ### Internal modules
 #### const.py

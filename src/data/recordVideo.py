@@ -8,7 +8,7 @@ import argparse
 
 def getArgs():
     parser = argparse.ArgumentParser()
-    parser.add_argument( "-v", "--video_path", default=datetime.now().strftime( "%Y%m%d%H%M%S" ), help="Path to recorded video relative to /data/video." )
+    parser.add_argument( "-v", "--video", default=datetime.now().strftime( "%Y%m%d%H%M%S" ), help="Path to recorded video relative to /data/video." )
     return parser.parse_known_args()[ 0 ]
 
 

@@ -19,7 +19,7 @@ import pyopenpose as op
 
 def parseArgs():
     parser = argparse.ArgumentParser()
-    parser.add_argument( "video_path", type=str, help="Path to file you want to proceed relative to /data/videos." )
+    parser.add_argument( "video", type=str, help="Path to file you want to proceed relative to /data/videos." )
     parser.add_argument( "-v", "--view", help="View only mode.", action="store_true" )
     parser.add_argument( "-p", "--proceed", help="Frames will be converted to skeleton image and saved in given path relative to /data/images." )
     parser.add_argument( "-w", "--write_video", help="Video with drawn skeletons and boxes wil be saved with name given into --proceed.", action="store_true" )
