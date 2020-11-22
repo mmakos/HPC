@@ -2,9 +2,8 @@ import sys
 import argparse
 import numpy as np
 import os
-import cv2
 
-os.environ[ 'TF_CPP_MIN_LOG_LEVEL' ] = '3'
+# os.environ[ 'TF_CPP_MIN_LOG_LEVEL' ] = '3'
 import tensorflow as tf
 
 sys.path.insert( 1, '../func' )

@@ -8,7 +8,7 @@ import argparse
 
 def getArgs():
     parser = argparse.ArgumentParser()
-    parser.add_argument( "-v", "--video_path", default=datetime.now().strftime( "%Y%m%d%H%M%S" ), help="Path to recorded video" )
+    parser.add_argument( "-v", "--video_path", default=datetime.now().strftime( "%Y%m%d%H%M%S" ), help="Path to recorded video relative to /data/video." )
     return parser.parse_known_args()[ 0 ]
 
 
@@ -28,7 +28,7 @@ def record():
     colorStream.start()
 
     args = getArgs()
-    fileName = "../../data/videos/" + args.video_path
+    fileName = "../../data/video/" + args.video_path
 
     recorder = openni2.Recorder( ( fileName + ".oni" ).encode( 'utf-8' ) )
     recorder.attach( depthStream )

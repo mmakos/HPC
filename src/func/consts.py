@@ -9,7 +9,7 @@ keypointsNumber = 15
 
 # keypoints detection
 keypointThreshold = 0.1
-minDetectedKeypoints = 12
+minDetectedKeypoints = 5
 
 # tracking
 maxDeltaCoefficient = 0.1     # F
@@ -20,16 +20,14 @@ maxFrameTime = 0.1  # 10 FPS
 # poses
 poses = (
     "stand",
-    "walk",
-    "run",
     "sit",
     "lie",
-    "dance",
-    "jump"
+    "lean",
+    "kneel"
 )
 
 # training
-batchSize = 8
+batchSize = 32
 
 # used for estimation depth of not detected keypoints on depth canal
 connections = (

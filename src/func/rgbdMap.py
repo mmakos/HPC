@@ -14,12 +14,13 @@ def mapToRGBD( keypoints, depthCanal ):
             for i in range( c.keypointsNumber ):
                 if human[ i ][ 2 ] >= c.keypointThreshold:        # keypoint is detected
                     pointsDetected = pointsDetected + 1
-                    if human[ i ][ 0 ] <= c.frameWidth and human[ i ][ 1 ] <= c.frameHeight:
+                    # if human[ i ][ 0 ] <= c.frameWidth and human[ i ][ 1 ] <= c.frameHeight:
+                    try:
                         point = ( int( human[ i ][ 0 ] * c.depthWidth / c.frameWidth + 0.5 ),
                                   int( human[ i ][ 1 ] * c.depthHeight / c.frameHeight + 0.5 ) )
                         depthVal = depthCanal[ point[ 1 ] ][ point[ 0 ] ]
                         # depthVal = filterDepthZeros( depthCanal, point )
-                    else:
+                    except IndexError:  # when keypoint detected beyond the borders
                         depthVal = 0
                     humanRGBD.append( [ int( human[ i ][ 0 ] + 0.5 ), int( human[ i ][ 1 ] + 0.5 ),
                                         depthVal, human[ i ][ 2 ] ] )
@@ -59,8 +60,8 @@ def filterDepthZeros( depthCanal, point, keyFunction=statistics.mean, window=1 )
 
 def estimateDepthZeros( points ):
     done = []
-    for i, point in enumerate( points ):
-        if point[ 2 ] == 0:
+    for i, _ in enumerate( points ):
+        if points[ i ][ 2 ] == 0:
             estimateDepthZeroPoint( i, points, done )
 
 

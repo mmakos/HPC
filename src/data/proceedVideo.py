@@ -19,9 +19,10 @@ import pyopenpose as op
 
 def parseArgs():
     parser = argparse.ArgumentParser()
-    parser.add_argument( "video_path", type=str, help="Path to file you want to proceed relative to /data." )
+    parser.add_argument( "video_path", type=str, help="Path to file you want to proceed relative to /data/videos." )
     parser.add_argument( "-v", "--view", help="View only mode.", action="store_true" )
-    parser.add_argument( "-p", "--proceed", help="Frames will be converted to skeleton image and saved in given path." )
+    parser.add_argument( "-p", "--proceed", help="Frames will be converted to skeleton image and saved in given path relative to /data/images." )
+    parser.add_argument( "-w", "--write_video", help="Video with drawn skeletons and boxes wil be saved with name given into --proceed.", action="store_true" )
     return parser.parse_known_args()
 
 
@@ -46,6 +47,7 @@ def initOpenPose():
     # starting OpenPose
     params = dict()
     params[ "model_folder" ] = "../../externals/openpose/models/"
+    params[ "render_threshold" ] = c.keypointThreshold
     getOpenPoseArgs( params )
     wrapper = op.WrapperPython()
     wrapper.configure( params )
@@ -100,12 +102,16 @@ def getStreams():
         framesNumber = int( vid.get( cv2.CAP_PROP_FRAME_COUNT ) )
 
 
+# throws EOFError when end of video
 def getFrame():
     global colorStream, depthStream
     if vType == 'bag':
-        frames = vid.poll_for_frames()
-        frameDepth = np.asanyarray( frames.get_depth_frame().get_data() )
-        frameColor = cv2.cvtColor( np.asanyarray( frames.get_color_frame().get_data() ), cv2.COLOR_BGR2RGB )
+        try:
+            frames = vid.poll_for_frames()
+            frameDepth = np.asanyarray( frames.get_depth_frame().get_data() )
+            frameColor = cv2.cvtColor( np.asanyarray( frames.get_color_frame().get_data() ), cv2.COLOR_BGR2RGB )
+        except RuntimeError:
+            raise EOFError( "No more frames" )
     elif vType == 'oni':
         frameColor = colorStream.read_frame()
         frameColor = np.array( ( frameColor.height, frameColor.width, 3 ), dtype=np.uint8,
@@ -119,8 +125,8 @@ def getFrame():
             frameDepth = cv2.imread( args.video_path + vid[ depthStream ], cv2.IMREAD_ANYDEPTH )
             colorStream = colorStream + 2
             depthStream = depthStream + 2
-        except:
-            raise FileNotFoundError( "No more frames." )
+        except IndexError:
+            raise EOFError( "No more frames." )
     elif vType == 'reg':
         frameDepth = np.zeros( ( c.depthHeight, c.depthWidth ) )
         ret, frameColor = vid.read()
@@ -151,6 +157,8 @@ def proceedFrame():
 if __name__ == '__main__':
     allArgs = parseArgs()
     args = allArgs[ 0 ]
+    videoWriter = None
+    outputVidPath = None
     dataPath = None
     if args.proceed:
         dataPath = f"../../data/images/{ args.proceed }"
@@ -159,11 +167,10 @@ if __name__ == '__main__':
         except:
             pass
 
+    args.video_path = "../../data/videos/" + args.video_path
     if not os.path.isfile( args.video_path ) and not os.path.isdir( args.video_path ):
-        args.video_path = "../../data/" + args.video_path
-        if not os.path.isfile( args.video_path ) and not os.path.isdir( args.video_path ):
-            print( "No video found. Please make sure you typed correct path to your video." )
-            exit()
+        print( "No video found. Please make sure you typed correct path to your video." )
+        exit()
 
     global vType, colorStream, depthStream, vid, framesNumber
     getStreams()
@@ -180,27 +187,32 @@ if __name__ == '__main__':
     for i in range( sys.maxsize ):
         try:
             frameRGB, frameD = getFrame()
-        except FileNotFoundError:
+        except EOFError:
             break
-        if i is 0:
+        if i == 0:
             initFrameDimensions()
+            if args.write_video and dataPath is not None:
+                outputVidPath = dataPath + ".mp4"
+                videoWriter = cv2.VideoWriter( outputVidPath, cv2.VideoWriter_fourcc( *'mp4v' ), 30.0,
+                                               ( c.frameWidth, c.frameHeight ) )
 
         if not args.view:
             frameRGB, skeletonImages, human = proceedFrame()
-            try:
-                for j, img in enumerate( skeletonImages ):
-                    cv2.imwrite( f"{ dataPath }/f{ i }s{ img[ 1 ] }.png", 255 * cv2.rotate( img[ 0 ], cv2.ROTATE_90_CLOCKWISE ) )
-                    display.displayPose( frameRGB, human[ j ], str( img[ 1 ] ) )
-                    savedImgNumber = savedImgNumber + 1
-            except:
-                break
+            for j, img in enumerate( skeletonImages ):
+                cv2.imwrite( f"{ dataPath }/f{ i }s{ img[ 1 ] }.png", 255 * cv2.rotate( img[ 0 ], cv2.ROTATE_90_CLOCKWISE ) )
+                display.displayPose( frameRGB, human[ j ], str( img[ 1 ] ) )
+                savedImgNumber = savedImgNumber + 1
 
         display.displayFrameTime( frameRGB, time() - t )
         t = time()
         cv2.imshow( "Video frame", frameRGB )
         cv2.imshow( "Depth frame", frameD )
+        if videoWriter is not None:
+            videoWriter.write( frameRGB )
         if cv2.waitKey( 1 ) & 0xFF == ord( 'q' ):
             break
 
+    if videoWriter is not None:
+        videoWriter.release()
     print( "Written", savedImgNumber, "skeleton images." )
     print( "Proceeded", i, "frames." )

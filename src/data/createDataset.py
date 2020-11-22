@@ -6,10 +6,10 @@ from sklearn.utils import shuffle
 
 parser = argparse.ArgumentParser()
 parser.add_argument( "dataset_name", help="Path to output dataset file relative to /data/datasets." )
-parser.add_argument( "-p", "--poses", default="poses", help="Path to folder with your poses folders relative to /data." )
+parser.add_argument( "-p", "--poses", default="/poses", help="Path to folder with your poses folders relative to /data/images." )
 args = parser.parse_known_args()[ 0 ]
 
-path = "../../data/" + args.poses
+path = "../../data/images/" + args.poses
 
 datasetImages = []
 datasetLabels = []

@@ -57,7 +57,13 @@ def normalize( keypoints, boundingBox ):
                boundingBox[ 1 ][ 0 ] - boundingBox[ 1 ][ 1 ],
                boundingBox[ 2 ][ 0 ] - boundingBox[ 2 ][ 1 ] ]
 
-    return [ [ ( i[ 0 ] - boundingBox[ 0 ][ 1 ] ) / bbDims[ 0 ],
-               ( i[ 1 ] - boundingBox[ 1 ][ 1 ] ) / bbDims[ 1 ],
-               ( i[ 2 ] - boundingBox[ 2 ][ 1 ] ) / bbDims[ 2 ] ]
-             for i in keypoints ]
+    try:
+        return [ [ ( i[ 0 ] - boundingBox[ 0 ][ 1 ] ) / bbDims[ 0 ],
+                   ( i[ 1 ] - boundingBox[ 1 ][ 1 ] ) / bbDims[ 1 ],
+                   ( i[ 2 ] - boundingBox[ 2 ][ 1 ] ) / bbDims[ 2 ] ]
+                 for i in keypoints ]
+    except ZeroDivisionError:
+        return [ [ ( i[ 0 ] - boundingBox[ 0 ][ 1 ] ) / ( bbDims[ 0 ] ),
+                   ( i[ 1 ] - boundingBox[ 1 ][ 1 ] ) / ( bbDims[ 1 ] ),
+                   ( i[ 2 ] - boundingBox[ 2 ][ 1 ] ) / ( bbDims[ 2 ] + 1 ) ]
+                 for i in keypoints ]
