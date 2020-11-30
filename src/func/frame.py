@@ -13,14 +13,13 @@ class Frame:
         self.lastSkeletonId = 0
         self.live = live
         self.prevTime = time()
+        self.frameTime = 0
 
     # function returns probabilities list of each pose for each given human (with skeleton id)
     # humans is list of humans with list of keypoints for every human and probability of this keypoint (0, when it's lower than threshold)
     def proceedFrame( self, humans ):
         if self.live:
-            c.frameTime = self.prevTime - time()
-            if c.frameTime > c.maxFrameTime:
-                c.frameTime = c.maxFrameTime
+            self.frameTime = min( self.prevTime - time(), c.maxFrameTime )
             self.prevTime = time()
         newSkeletons = []
         if not humans:

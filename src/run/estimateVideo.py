@@ -229,8 +229,11 @@ if __name__ == '__main__':
         if not args.preview:
             frameRGB, poses, humans = proceedFrame()
             for j, human in enumerate( humans ):
-                display.displayPose( frameRGB, human, str( poses[ j ][ 1 ] ) + ": " +
+                try:
+                    display.displayPose( frameRGB, human, str( poses[ j ][ 1 ] ) + ": " +
                                      c.poses[ np.argmax( poses[ j ][ 0 ] ) ] + f" - { int( np.max( poses[ j ][ 0 ] ) * 100 ) }%" )
+                except:
+                    pass
 
         display.displayFrameTime( frameRGB, time() - t )
         t = time()

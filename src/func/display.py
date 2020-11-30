@@ -7,6 +7,10 @@ def displayFrameTime( img, sec ):
     cv2.putText( img, "Time: " + "{:.3f}s".format( sec ), ( 5, 23 ), cv2.FONT_HERSHEY_SIMPLEX, 0.8, ( 255, 0, 0 ), 2 )
 
 
+def displayFrameNumber( img, number ):
+    cv2.putText( img, "Frame: " + str( number ), ( 5, 50 ), cv2.FONT_HERSHEY_SIMPLEX, 0.8, ( 255, 0, 255 ), 2 )
+
+
 def displayPose( img, keypoints, pose ):
     keypoints = [ i for i in keypoints if i[ 3 ] >= c.keypointThreshold ]
     bb = frame.getBoundingBox( keypoints )

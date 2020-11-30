@@ -12,10 +12,12 @@ keypointThreshold = 0.1
 minDetectedKeypoints = 5
 
 # tracking
-maxDeltaCoefficient = 0.1     # F
+maxDeltaCoefficient = 0.2     # F
 probThreshold = 0.1
-frameTime = 0.333    # 10 FPS
-maxFrameTime = 0.1  # 10 FPS
+frameTime = 0.333       # 10 FPS
+maxFrameTime = 1 / 5    # if live frame time is greater, then pose will estimated for this value, (interpolation for 1FPS makes no sense)
+inputFrameRate = 30     # frame rate of input (for proceeding and estimating)
+outputFrameRate = 10    # frame rate of output dataset (for proceeding)
 
 # poses
 poses = (
@@ -23,7 +25,11 @@ poses = (
     "sit",
     "lie",
     "lean",
-    "kneel"
+    "kneel",
+    "walk",
+    "run",
+    "jump",
+    "dance",
 )
 
 # training

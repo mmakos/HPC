@@ -62,24 +62,24 @@ def initFrameDimensions():
 
 def getStreams():
     global vType, colorStream, depthStream, vid, framesNumber
-    if args.video_path[ -4: ] == ".oni":
+    if args.video[ -4: ] == ".oni":
         vType = 'oni'
         print( "OpenNI file" )
         from primesense import openni2
-        vid = openni2.Device.open_file( args.video_path )
+        vid = openni2.Device.open_file( args.video )
         colorStream = vid.create_color_stream()
         colorStream.start()
         depthStream = vid.create_depth_stream()
         depthStream.start()
         framesNumber = colorStream.get_number_of_frames()
     # RealSense video / tiago video
-    elif args.video_path[ -4: ] == ".bag":
+    elif args.video[ -4: ] == ".bag":
         vType = 'bag'
         print( "RealSense file" )
         import pyrealsense2 as rs
         vid = rs.pipeline()
         conf = rs.config()
-        rs.config.enable_device_from_file( conf, args.video_path, repeat_playback=False )
+        rs.config.enable_device_from_file( conf, args.video, repeat_playback=False )
         conf.enable_stream( rs.stream.depth )
         conf.enable_stream( rs.stream.color )
         profile = vid.start( conf )
@@ -87,10 +87,10 @@ def getStreams():
         playback.set_real_time( False )
         framesNumber = "Unknown quantity of"
     # RGB and depth image video (net datasets and tiago recorded to images)
-    elif args.video_path[ -1 ] == "/" or args.video_path[ -1 ] == "\\":
+    elif args.video[ -1 ] == "/" or args.video[ -1 ] == "\\":
         vType = 'img'
         print( "Video from images." )
-        vid = sorted( os.listdir( args.video_path ) )  # vid is array of file names
+        vid = sorted( os.listdir( args.video ) )  # vid is array of file names
         framesNumber = len( vid )
         colorStream = 0
         depthStream = 1
@@ -98,7 +98,7 @@ def getStreams():
     else:
         vType = 'reg'
         print( "Regular video" )
-        vid = cv2.VideoCapture( args.video_path )
+        vid = cv2.VideoCapture( args.video )
         framesNumber = int( vid.get( cv2.CAP_PROP_FRAME_COUNT ) )
 
 
@@ -121,8 +121,8 @@ def getFrame():
                                buffer=frameDepth.get_buffer_as_uint16() )
     elif vType == 'img':
         try:
-            frameColor = cv2.imread( args.video_path + vid[ colorStream ] )
-            frameDepth = cv2.imread( args.video_path + vid[ depthStream ], cv2.IMREAD_ANYDEPTH )
+            frameColor = cv2.imread( args.video + vid[ colorStream ] )
+            frameDepth = cv2.imread( args.video + vid[ depthStream ], cv2.IMREAD_ANYDEPTH )
             colorStream = colorStream + 2
             depthStream = depthStream + 2
         except IndexError:
@@ -167,8 +167,8 @@ if __name__ == '__main__':
         except:
             pass
 
-    args.video_path = "../../data/videos/" + args.video_path
-    if not os.path.isfile( args.video_path ) and not os.path.isdir( args.video_path ):
+    args.video = "../../data/videos/" + args.video
+    if not os.path.isfile( args.video ) and not os.path.isdir( args.video ):
         print( "No video found. Please make sure you typed correct path to your video." )
         exit()
 
@@ -204,6 +204,7 @@ if __name__ == '__main__':
                 savedImgNumber = savedImgNumber + 1
 
         display.displayFrameTime( frameRGB, time() - t )
+        display.displayFrameNumber( frameRGB, i )
         t = time()
         cv2.imshow( "Video frame", frameRGB )
         cv2.imshow( "Depth frame", frameD )
