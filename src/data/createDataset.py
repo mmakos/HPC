@@ -24,7 +24,11 @@ label = 0
 for _, poses, _ in os.walk( path ):
     for pose in poses:
         posePath = path + "/" + pose
-        label = int( pose.split( "_" )[ 1 ] )
+        try:
+            label = int( pose.split( "_" )[ 1 ] )
+            x = c.poses[ label ]
+        except ( IndexError, ValueError ):
+            continue
         for _, _, images in os.walk( posePath ):
             for i in tqdm( range( len( images ) ), desc=c.poses[ label ] ):
                 imgPath = posePath + "/" + images[ i ]

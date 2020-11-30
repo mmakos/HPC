@@ -16,8 +16,14 @@ maxDeltaCoefficient = 0.2     # F
 probThreshold = 0.1
 frameTime = 0.333       # 10 FPS
 maxFrameTime = 1 / 5    # if live frame time is greater, then pose will estimated for this value, (interpolation for 1FPS makes no sense)
-inputFrameRate = 30     # frame rate of input (for proceeding and estimating)
+# inputFrameRate = 30     # frame rate of input (for proceeding and estimating)
 outputFrameRate = 10    # frame rate of output dataset (for proceeding)
+
+# dataset augmentation
+imgFrameRate = 30           # frame rate of original train images
+minOutputFrameRate = 5      # train images min frame rate
+maxOutputFrameRate = 15     # train images max frame rate
+frameRateStep = 1           # e.g. if 1 images will have frame rates: 5, 6, 7, 8, ..., 15
 
 # poses
 poses = (
