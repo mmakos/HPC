@@ -23,6 +23,7 @@ def parseArgs():
     parser.add_argument( "-v", "--view", help="View only mode.", action="store_true" )
     parser.add_argument( "-p", "--proceed", help="Frames will be converted to skeleton image and saved in given path relative to /data/images." )
     parser.add_argument( "-w", "--write_video", help="Video with drawn skeletons and boxes wil be saved with name given into --proceed.", action="store_true" )
+    parser.add_argument( "-l", "--long", help="Skeletons will be saved as one long image instead of multiple small images.", action="store_true" )
     return parser.parse_known_args()
 
 
@@ -180,6 +181,8 @@ if __name__ == '__main__':
         opWrapper = initOpenPose()
         frame = Frame()
 
+    skels = []
+    skelNumbers = []
     t = time()
     savedImgNumber = 0
     i = 0
@@ -198,10 +201,27 @@ if __name__ == '__main__':
 
         if not args.view:
             frameRGB, skeletonImages, human = proceedFrame()
+            currentSkels = []
             for j, img in enumerate( skeletonImages ):
-                cv2.imwrite( f"{ dataPath }/f{ i }s{ img[ 1 ] }.png", 255 * cv2.rotate( img[ 0 ], cv2.ROTATE_90_CLOCKWISE ) )
+                img[ 0 ] = 255 * cv2.rotate( img[ 0 ], cv2.ROTATE_90_CLOCKWISE )
+                if not args.long:
+                    cv2.imwrite( f"{ dataPath }/f{ i }s{ img[ 1 ] }.png", img[ 0 ] )
+                    savedImgNumber = savedImgNumber + 1
+                else:
+                    currentSkels.append( img[ 1 ] )
+                    if img[ 1 ] not in skelNumbers:
+                        skelNumbers.append( img[ 1 ] )
+                        skels.append( [] )
+                    skels[ skelNumbers.index( img[ 1 ] ) ].insert( 0, img[ 0 ][ :, 0:1 ] )
                 display.displayPose( frameRGB, human[ j ], str( img[ 1 ] ) )
-                savedImgNumber = savedImgNumber + 1
+
+            if args.long:
+                for si, s in enumerate( skelNumbers ):
+                    if s not in currentSkels:       # end of skeleton
+                        if len( skels[ si ] ) >= c.minLongImageLength:
+                            cv2.imwrite( f"{ dataPath }/s{ s }.png", np.concatenate( skels[ si ], axis=1 ) )  # save
+                        skels.pop( si )             # remove from lists
+                        skelNumbers.pop( si )
 
         display.displayFrameTime( frameRGB, time() - t )
         display.displayFrameNumber( frameRGB, i )

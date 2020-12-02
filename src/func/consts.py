@@ -1,9 +1,9 @@
+# general
 frameWidth = 640
 frameHeight = 480
 depthWidth = 640
 depthHeight = 480
 frameDepth = 10000    # to set
-
 framesNumber = 32
 keypointsNumber = 15
 
@@ -16,8 +16,11 @@ maxDeltaCoefficient = 0.2     # F
 probThreshold = 0.1
 frameTime = 0.333       # 10 FPS
 maxFrameTime = 1 / 5    # if live frame time is greater, then pose will estimated for this value, (interpolation for 1FPS makes no sense)
-# inputFrameRate = 30     # frame rate of input (for proceeding and estimating)
+inputFrameRate = 30     # frame rate of input (for proceeding and estimating)
 outputFrameRate = 10    # frame rate of output dataset (for proceeding)
+
+# dataset creating
+minLongImageLength = framesNumber
 
 # dataset augmentation
 imgFrameRate = 30           # frame rate of original train images

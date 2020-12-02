@@ -67,7 +67,7 @@ if __name__ == '__main__':
     trainDataset = trainDataset.batch( c.batchSize )
     testDataset = testDataset.batch( c.batchSize )
     # trainDataset.reshape( -1, c.keypointsNumber, c.framesNumber, 3 )
-    m.fit( trainDataset, epochs=3, batch_size=c.batchSize )
+    m.fit( trainDataset, epochs=1, batch_size=c.batchSize )
     # testLoss, testAccuracy = m.evaluate( testDataset )
     # print( "Test loss = " + str( testLoss ) + "\nTest accuracy = " + str( testAccuracy ) )
 
