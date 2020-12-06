@@ -139,17 +139,34 @@ def getFrame():
     return frameColor, frameDepth
 
 
+def getAnnotations():
+    ans = []
+    frames = pickle.load( open( "../../data/images/" + args.annotations, "rb" ) )
+    for f in frames:
+        ans.append( [ [ a[ 0 ], a[ 1 ], a[ 3 ] ] for a in f ] )
+    return ans
+
+
 def proceedFrame():
-    datum = op.Datum()
-    datum.cvInputData = frameRGB
-    opWrapper.emplaceAndPop( [ datum ] )
+    if not args.annotations:
+        datum = op.Datum()
+        datum.cvInputData = frameRGB
+        opWrapper.emplaceAndPop( [ datum ] )
 
-    # array of people with keypoints is in datum.poseKeypoints
-    # getSkeletons gives for every human skeleton image
-    image = datum.cvOutputData  # image is frame with drawn skeleton
+        # array of people with keypoints is in datum.poseKeypoints
+        # getSkeletons gives for every human skeleton image
+        image = datum.cvOutputData  # image is frame with drawn skeleton
 
-    # map to RGBD
-    rgbdKeypoints = mapToRGBD( datum.poseKeypoints, frameD )
+        # map to RGBD
+        rgbdKeypoints = mapToRGBD( datum.poseKeypoints, frameD )
+    else:
+        image = frameRGB
+        idx = i - beginFrame
+        if idx >= 0:
+            rgbdKeypoints = mapToRGBD( [ annotations[ idx ] ], frameD )
+            display.skeleton( image, annotations[ idx ] )
+        else:
+            rgbdKeypoints = []
     # convert frame to skeleton image
     skeletons = []
     if args.proceed:
@@ -226,6 +243,10 @@ if __name__ == '__main__':
     if not os.path.isfile( args.video ) and not os.path.isdir( args.video ):
         print( "No video found. Please make sure you typed correct path to your video." )
         exit()
+
+    if args.annotations is not None:
+        annotations = getAnnotations()
+        beginFrame = int( args.annotations.split( '/' )[ -1 ].split( 'at' )[ 1 ].split( ".p" )[ 0 ].split( '_f' )[ 0 ] )
 
     global vType, colorStream, depthStream, vid, framesNumber
     getStreams()

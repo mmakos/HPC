@@ -28,3 +28,8 @@ def displayPose( img, keypoints, pose ):
     ( textW, textH ) = cv2.getTextSize( pose, cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, thickness=2 )[ 0 ]
     cv2.rectangle( img, ( x, y ), ( x + textW + 2, y + textH + 2 ), ( 0, 255, 0 ), cv2.FILLED )
     cv2.putText( img, pose, ( x, y + textH - 1 ), cv2.FONT_HERSHEY_SIMPLEX, 0.5, ( 0, 0, 255 ), 2 )
+
+
+def skeleton( img, keypoints ):
+    for kp in keypoints:
+        cv2.circle( img, ( kp[ 0 ], kp[ 1 ] ), radius=3, color=( 0, 255, 0 ), thickness=-1 )

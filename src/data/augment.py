@@ -26,6 +26,8 @@ images = natsorted( os.listdir( inputPath ) )
 print( images )
 # creating small pics for different fps
 for name in images:
+    if name[ -4:] != '.png':
+        continue
     skeleton = cv2.imread( inputPath + name )
     skeletonLength = skeleton.shape[ 1 ]
     for fps in tqdm( range( c.minOutputFrameRate, c.maxOutputFrameRate + 1, c.frameRateStep ), desc=f"Proceeding { name } skeleton" ):

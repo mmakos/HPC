@@ -53,6 +53,36 @@ Usage: `python proceedVideo.py -v video -m model -w write_name -P -p -g`:
 * *-g* - gpu mode - tensorflow will work on GPU. This is not default setting, because OpenPose use a lot of GPU memory, so it cannot run together with tensorflow.
 
 ### Data processing
+#### Dataset creation pipeline
+Current general pipeline of creating dataset (pose is recorded pose and X is number of recording):
+1. Create folders in /data/images and /data/videos for your data (`mkdir /data/images/example`, `mkdir /data/videos/example`). 
+2. Record video as image sequence (finally it is the most universal format and the only one supported in all modules) with only one main skeleton:
+    * `python recordVideo.py -v example/poseX -c` (-c for color preview).
+    * press `s` to start recording (when camera is focused and you are ready)
+    * press `q` to end recording
+    * remember that path to your video must have slash on the end (`example/poseX/`)
+3. Estimate keypoints and get annotation file:
+    * `python proceedVideo.py example/poseX/ -p example/pose -k`
+    * rename main skeleton file from s_atY.p to poseXatY.png and delete rest of skeletons (or you can rename it to poseX+1_atY.png etc. bu I recommend only one skeleton per video). Don't delete number after *at* - it is start frame of skeleton needed for proper synchronization of annotations with video.
+4. Edit keypoints:
+    * `python fillKeypoints example/poseX/ example/pose/poseXatY.p`
+    * press *Skip* button to find next incomplete frame or go frame by frame using *Next* button.
+    * press *Save* to save changes into file.
+    * your file is writen as `poseXatY_f.p` (you can rename it to previous version file, but you will loose original annotations).
+5. Create long images from annotations:
+    * `python proceedVideo.py example/poseX/ -a example/pose/poseXatY_f.p -p example/pose`
+    * you should receive one *.png* file `s0.png`. Rename it to `poseX.png`.
+6. Repeat steps 1-5 to create another skeleton for your pose.
+    * After that you should have bunch of images in `/data/images/example/pose/` folder named `pose0.png pose1.png` etc.
+7. Create small images for training from created long images:
+    * `python augument.py example/pose -o example/pose_Z` where *Z* is code of pose eg. for stand it's 0.
+    * If you didn't type -o argument your short images will be stored in `/data/images/example/pose/pose_aug/` folder.
+8. Repeat steps 1-7 for different poses.
+    * After that you should have in your `/data/images/example/` folder bunch of folders named `stand_0 sit_1` etc.
+9. Create dataset from all images:
+    * `python createDataset.py example -d datasetName`.
+
+
 #### recordVideo.py
 Module records stream of RGBD camera and writes output to *.oni* file. Output video will be stored in `/data/videos`.
 
@@ -80,6 +110,7 @@ Usage: `python fillKeypoints.y video annotations`:
 * video - path to video you want to open (it is independent of the keypoint annotations, so please make sure you typed correct path).
 * annotations - path to file with keypoints annotations you want to correct.
 
+Buttons:
 * *Next* - next frame will be shown. Changes from previous will be saved (but not in the file yet).
 * *Previous* - previous frame will be shown. Changes from previous frame will be saved (but not in the file yet).
 * *Skip* - skips to next frame where not all keypoints are detected.

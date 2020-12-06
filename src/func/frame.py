@@ -62,6 +62,8 @@ class Frame:
     # function takes detected humans keypoints and return skeleton image for each human
     # this is equivalent to proceedFrame, but for creating dataset
     def getSkeletons( self, humans ):
+        if not humans:
+            return []
         newSkeletons = []
         for human in humans:
             self.proceedHuman( human, newSkeletons )
@@ -77,7 +79,9 @@ class Frame:
 
     # function does the same as getSkeletons() but it returns last skeleton keypoints instead of image
     def getKeypoints( self, humans ):
-        newSkeletons = [ ]
+        if not humans:
+            return []
+        newSkeletons = []
         for human in humans:
             self.proceedHuman( human, newSkeletons )
         self.skeletons = newSkeletons
