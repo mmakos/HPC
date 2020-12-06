@@ -11,6 +11,10 @@ def displayFrameNumber( img, number ):
     cv2.putText( img, "Frame: " + str( number ), ( 5, 50 ), cv2.FONT_HERSHEY_SIMPLEX, 0.8, ( 255, 0, 255 ), 2 )
 
 
+def displaySmallFrameNumber( img, number ):
+    cv2.putText( img, str( number ), ( 5, 15 ), cv2.FONT_HERSHEY_SIMPLEX, 0.5, ( 255, 0, 255 ), 2 )
+
+
 def displayPose( img, keypoints, pose ):
     keypoints = [ i for i in keypoints if i[ 3 ] >= c.keypointThreshold ]
     bb = frame.getBoundingBox( keypoints )

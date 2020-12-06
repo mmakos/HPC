@@ -21,18 +21,19 @@ class Frame:
         if self.live:
             self.frameTime = min( self.prevTime - time(), c.maxFrameTime )
             self.prevTime = time()
-        newSkeletons = []
+        newSkeletons = []       # here will be all detected skeletons
         if not humans:
             return []
         for human in humans:
             self.proceedHuman( human, newSkeletons )
-        self.skeletons = [ s for s in newSkeletons if s is not None ]
+        # self.skeletons = [ s for s in newSkeletons if s is not None ]   # we save only existing skeletons
+        self.skeletons = newSkeletons
         poses = []
         for skeleton in newSkeletons:
-            if skeleton is not None:
-                poses.append( [ self.classifyPose( skeleton ), skeleton.getSkeletonId() ] )
-            else:
-                poses.append( None )
+            # if skeleton is not None:
+            poses.append( [ self.classifyPose( skeleton ), skeleton.getSkeletonId() ] )
+            # else:
+            #     poses.append( None )
         return poses
 
     def proceedHuman( self, human, newSkeletons ):
@@ -64,14 +65,26 @@ class Frame:
         newSkeletons = []
         for human in humans:
             self.proceedHuman( human, newSkeletons )
-        self.skeletons = [ s for s in newSkeletons if s is not None ]
+        # self.skeletons = [ s for s in newSkeletons if s is not None ]
+        self.skeletons = newSkeletons
         images = []
         for skeleton in self.skeletons:
-            if skeleton is not None:
-                images.append( [ skeleton.getSkeletonImg(), skeleton.getSkeletonId() ] )
-            else:
-                images.append( None )
+            # if skeleton is not None:
+            images.append( [ skeleton.getSkeletonImg(), skeleton.getSkeletonId() ] )
+            # else:
+            #     images.append( None )
         return images
+
+    # function does the same as getSkeletons() but it returns last skeleton keypoints instead of image
+    def getKeypoints( self, humans ):
+        newSkeletons = [ ]
+        for human in humans:
+            self.proceedHuman( human, newSkeletons )
+        self.skeletons = newSkeletons
+        keypoints = []
+        for skeleton in self.skeletons:
+            keypoints.append( [ skeleton.getSkeletonKeypoints(), skeleton.getSkeletonId() ] )
+        return keypoints
 
 
 # returns list [ [ maxW, minW ], [ maxH, minH ], [ maxD, minD ] ]

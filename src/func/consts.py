@@ -12,7 +12,7 @@ keypointThreshold = 0.1
 minDetectedKeypoints = 5
 
 # tracking
-maxDeltaCoefficient = 0.2     # F
+maxDeltaCoefficient = 0.5     # F
 probThreshold = 0.1
 frameTime = 0.333       # 10 FPS
 maxFrameTime = 1 / 5    # if live frame time is greater, then pose will estimated for this value, (interpolation for 1FPS makes no sense)
@@ -24,8 +24,8 @@ minLongImageLength = framesNumber
 
 # dataset augmentation
 imgFrameRate = 30           # frame rate of original train images
-minOutputFrameRate = 5      # train images min frame rate
-maxOutputFrameRate = 15     # train images max frame rate
+minOutputFrameRate = 30      # train images min frame rate
+maxOutputFrameRate = 30     # train images max frame rate
 frameRateStep = 1           # e.g. if 1 images will have frame rates: 5, 6, 7, 8, ..., 15
 
 # poses
@@ -61,4 +61,22 @@ connections = (
     ( 8, 13 ),
     ( 12, 14 ),
     [ 13 ]
+)
+
+keypoints = (
+    "Nose",
+    "Neck",
+    "Right shoulder",
+    "Right elbow",
+    "Right wrist",
+    "Left shoulder",
+    "Left elbow",
+    "Left wrist",
+    "Middle hip",
+    "Right hip",
+    "Right knee",
+    "Right ankle",
+    "Left hip",
+    "Left knee",
+    "Left ankle",
 )

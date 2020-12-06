@@ -8,6 +8,9 @@ import cv2
 import numpy as np
 import os
 
+sys.path.insert( 1, '../func' )
+import display
+
 
 def getArgs():
     parser = argparse.ArgumentParser()
@@ -57,9 +60,9 @@ def recordRs():
     if not os.path.isdir( path ):
         os.mkdir( path )
     print( "Press 's' to start recording" )
-    keyboard.wait( "s" )
-    print()
-    print( "Recording...\nPress 'q' to stop recording" )
+
+    rec = False
+    i = 0
     while True:
         frames = dev.wait_for_frames()
         frameDepth = np.asanyarray( frames.get_depth_frame().get_data() )
@@ -67,12 +70,18 @@ def recordRs():
 
         dt_string = datetime.now().strftime( "%d%m%Y_%H%M%S%f" )
         if args.color_preview:
+            display.displaySmallFrameNumber( frameColor, i )
             cv2.imshow( "Color frame", frameColor )
         if args.depth_preview:
             cv2.imshow( "Depth frame", frameDepth )
-        cv2.imwrite( path + "/" + dt_string + "_d.png", frameDepth )
-        cv2.imwrite( path + "/" + dt_string + "_c.jpg", frameColor )
+        if rec:
+            cv2.imwrite( path + "/" + dt_string + "_d.png", frameDepth )
+            cv2.imwrite( path + "/" + dt_string + "_c.jpg", frameColor )
+            i = i + 1
 
+        if not rec and cv2.waitKey( 1 ) & 0xFF == ord( 's' ):
+            rec = True
+            print( "Recording...\nPress 'q' to stop recording" )
         if cv2.waitKey( 1 ) & 0xFF == ord( 'q' ):
             break
 

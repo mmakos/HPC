@@ -4,6 +4,7 @@ import cv2
 import sys
 import os
 from time import time
+import pickle
 
 sys.path.insert( 1, '../func' )
 import display
@@ -24,6 +25,7 @@ def parseArgs():
     parser.add_argument( "-p", "--proceed", help="Frames will be converted to skeleton image and saved in given path relative to /data/images." )
     parser.add_argument( "-w", "--write_video", help="Video with drawn skeletons and boxes wil be saved with name given into --proceed.", action="store_true" )
     parser.add_argument( "-l", "--long", help="Skeletons will be saved as one long image instead of multiple small images.", action="store_true" )
+    parser.add_argument( "-k", "--keypoints_mode", help="Saves pure keypoints into text file in folder given into --proceed.", action="store_true" )
     return parser.parse_known_args()
 
 
@@ -150,9 +152,60 @@ def proceedFrame():
     # convert frame to skeleton image
     skeletons = []
     if args.proceed:
-        skeletons = frame.getSkeletons( rgbdKeypoints )
+        if not args.keypoints_mode:
+            skeletons = frame.getSkeletons( rgbdKeypoints )
+        else:
+            skeletons = frame.getKeypoints( rgbdKeypoints )
 
     return image, skeletons, rgbdKeypoints
+
+
+def proceedSkeletonImages( end=False ):
+    global savedImgNumber
+    currentSkels = [ ]
+    if not end:
+        for j, img in enumerate( skeletonImages ):
+            img[ 0 ] = 255 * cv2.rotate( img[ 0 ], cv2.ROTATE_90_CLOCKWISE )
+            if not args.long:  # save image for every skeleton
+                cv2.imwrite( f"{ dataPath }/f{ i }s{ img[ 1 ] }.png", img[ 0 ] )
+                savedImgNumber = savedImgNumber + 1
+            else:  # remember to write long video when skeleton ends
+                currentSkels.append( img[ 1 ] )
+                if img[ 1 ] not in skelNumbers:
+                    skelNumbers.append( img[ 1 ] )
+                    skels.append( [ ] )
+                skels[ skelNumbers.index( img[ 1 ] ) ].insert( 0, img[ 0 ][ :, 0:1 ] )
+            display.displayPose( frameRGB, human[ j ], str( img[ 1 ] ) )
+
+    if args.long:  # write ended skeletons
+        for si, s in enumerate( skelNumbers ):
+            if end or s not in currentSkels:  # end of skeleton
+                if len( skels[ si ] ) >= c.minLongImageLength:
+                    cv2.imwrite( f"{ dataPath }/s{ s }.png", np.concatenate( skels[ si ], axis=1 ) )  # save
+                skels.pop( si )  # remove from lists
+                skelNumbers.pop( si )
+
+
+def proceedSkeletonKeypoints( end=False ):
+    global savedImgNumber
+    currentSkels = []
+    if not end:
+        for j, keypoints in enumerate( skeletonImages ):
+            currentSkels.append( keypoints[ 1 ] )
+            if keypoints[ 1 ] not in skelNumbers:
+                skelNumbers.append( keypoints[ 1 ] )
+                skels.append( [] )
+            skels[ skelNumbers.index( keypoints[ 1 ] ) ].append( keypoints[ 0 ] )
+            display.displayPose( frameRGB, human[ j ], str( keypoints[ 1 ] ) )
+
+    # write ended skeletons
+    for si, s in enumerate( skelNumbers ):
+        if end or s not in currentSkels:  # end of skeleton
+            if len( skels[ si ] ) >= c.minLongImageLength:  # save, as sXatY where x is skeleton number and at is frame when it starts to show
+                pickle.dump( skels[ si ], open( f"{ dataPath }/s{ s }at{ i - len( skels[ si ] ) }.p", "wb" ) )
+                # cv2.imwrite( f"{dataPath}/s{s}.png", np.concatenate( skels[ si ], axis=1 ) )  # save
+            skels.pop( si )  # remove from lists
+            skelNumbers.pop( si )
 
 
 if __name__ == '__main__':
@@ -201,27 +254,10 @@ if __name__ == '__main__':
 
         if not args.view:
             frameRGB, skeletonImages, human = proceedFrame()
-            currentSkels = []
-            for j, img in enumerate( skeletonImages ):
-                img[ 0 ] = 255 * cv2.rotate( img[ 0 ], cv2.ROTATE_90_CLOCKWISE )
-                if not args.long:
-                    cv2.imwrite( f"{ dataPath }/f{ i }s{ img[ 1 ] }.png", img[ 0 ] )
-                    savedImgNumber = savedImgNumber + 1
-                else:
-                    currentSkels.append( img[ 1 ] )
-                    if img[ 1 ] not in skelNumbers:
-                        skelNumbers.append( img[ 1 ] )
-                        skels.append( [] )
-                    skels[ skelNumbers.index( img[ 1 ] ) ].insert( 0, img[ 0 ][ :, 0:1 ] )
-                display.displayPose( frameRGB, human[ j ], str( img[ 1 ] ) )
-
-            if args.long:
-                for si, s in enumerate( skelNumbers ):
-                    if s not in currentSkels:       # end of skeleton
-                        if len( skels[ si ] ) >= c.minLongImageLength:
-                            cv2.imwrite( f"{ dataPath }/s{ s }.png", np.concatenate( skels[ si ], axis=1 ) )  # save
-                        skels.pop( si )             # remove from lists
-                        skelNumbers.pop( si )
+            if not args.keypoints_mode:
+                proceedSkeletonImages()
+            else:
+                proceedSkeletonKeypoints()
 
         display.displayFrameTime( frameRGB, time() - t )
         display.displayFrameNumber( frameRGB, i )
@@ -235,5 +271,12 @@ if __name__ == '__main__':
 
     if videoWriter is not None:
         videoWriter.release()
+
+    if len( skelNumbers ) > 0:
+        if not args.keypoints_mode and args.long:
+            proceedSkeletonImages( end=True )
+        elif args.keypoints_mode:
+            proceedSkeletonKeypoints( end=True )
+
     print( "Written", savedImgNumber, "skeleton images." )
     print( "Proceeded", i, "frames." )

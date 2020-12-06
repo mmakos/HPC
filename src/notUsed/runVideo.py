@@ -53,8 +53,8 @@ while True:
     frameRGB = np.array( (frameColor.height, frameColor.width, 3 ), dtype=np.uint8, buffer=frameColor.get_buffer_as_uint8() ) / 255
 
     datum = op.Datum()
-    c.frameHeight, c.frameWidth, dim = frameRGB.shape
-    c.depthHeight, c.depthWidth, dim = frameD.shape
+    c.frameHeight, c.frameWidth, _ = frameRGB.shape
+    c.depthHeight, c.depthWidth, _ = frameD.shape
     datum.cvInputData = frameRGB
     opWrapper.emplaceAndPop( [ datum ] )
 

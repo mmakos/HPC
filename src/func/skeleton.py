@@ -51,6 +51,9 @@ class Skeleton:
     def getSkeletonId( self ):
         return self.id
 
+    def getSkeletonKeypoints( self ):
+        return self.lastKeypoints
+
 
 def normalize( keypoints, boundingBox ):
     bbDims = [ boundingBox[ 0 ][ 0 ] - boundingBox[ 0 ][ 1 ],
