@@ -109,7 +109,6 @@ def onPointMove( event ):
 
 def nextFrame():
     global frameNumber
-    saveFrame()
     frameNumber = frameNumber + 1
     try:
         showImage()
@@ -132,7 +131,6 @@ def skip():
 
 def prevFrame():
     global frameNumber
-    saveFrame()
     if frameNumber <= 0:
         return
     frameNumber = frameNumber - 1
@@ -144,7 +142,7 @@ def save():
         for kp, _ in enumerate( frame ):
             if frame[ kp ][ 3 ] == -1:
                 frame[ kp ][ 3 ] = 1.0
-    pickle.dump( newKeypoints, open( f"{ args.path[ :-2 ] }_filled.p", "wb" ) )
+    pickle.dump( newKeypoints, open( f"{ args.path[ :-2 ] }_f.p", "wb" ) )
 
 
 def resetKeys():
@@ -152,18 +150,6 @@ def resetKeys():
     idx = frameNumber - beginFrame
     if idx >= 0:
         newKeypoints[ idx ] = deepcopy( keypoints[ idx ] )
-
-
-def saveFrame():
-    pass
-    # idx = frameNumber - beginFrame
-    # if idx >= 0:
-    #     for i, p in enumerate( points ):
-    #         coords = canvas.coords( p )
-    #         x = int( coords[ 0 ] + pointSize )
-    #         y = int( coords[ 1 ] + pointSize )
-    #         if newKeypoints[ idx ][ i ][ 0 ] != x or newKeypoints[ idx ][ i ][ 1 ] != y:
-    #             newKeypoints[ idx ][ i ] = [ x, y, newKeypoints[ idx ][ i ][ 2 ], -1 ]
 
 
 root = Tk()

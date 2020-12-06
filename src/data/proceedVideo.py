@@ -26,6 +26,7 @@ def parseArgs():
     parser.add_argument( "-w", "--write_video", help="Video with drawn skeletons and boxes wil be saved with name given into --proceed.", action="store_true" )
     parser.add_argument( "-l", "--long", help="Skeletons will be saved as one long image instead of multiple small images.", action="store_true" )
     parser.add_argument( "-k", "--keypoints_mode", help="Saves pure keypoints into text file in folder given into --proceed.", action="store_true" )
+    parser.add_argument( "-a", "--annotations", help="Loads file with skeleton annotations and creates images based on those." )
     return parser.parse_known_args()
 
 

@@ -63,11 +63,35 @@ Usage: `python recordVideo.py -v video_name`:
 Module takes recorded video in *.oni* or regular video format, estimates human skeletons and converts this skeletons into images.
 Module also shows video with estimated skeletons.
 
-Usage: `python proceedVideo.py video_path -d -v -p proceed`:
+Usage: `python proceedVideo.py video_path -p proceed -a annotations -v -w -l -k`:
 * video_path - path to your video relative to running folder or to `/data/video` folder.
-* -w - name of output video (if you want to save proceeded video). Useful to know which coded skeleton images correspond to which frame in proceeded video.
-* -v - view mode. Select this option when you only want to view your video (without estimating skeletons. Useful for viewing *.oni* files.
 * proceed - proceed mode. Select this option when you want to code estimated skeletons to images. *Proceed* is name of folder where images will be saved (relative to `/data/images/` folder).
+* annotations - skeletons will not be estimated. It will be loaded from annotation file with pickle extinction (*.p*) instead.
+* -v - view mode. Select this option when you only want to view your video (without estimating skeletons. Useful for viewing *.oni* files or image sequences.
+* -w - name of output video (if you want to save proceeded video). Useful to know which coded skeleton images correspond to which frame in proceeded video.
+* -l - skeletons will be written into one long image instead of multiple small images for every frame. It can be easily proceeded with *augment* module.
+* -k - skeleton annotations will be written into pickle file as absolute instead of encoding it to images. It can be then edited with *fillKeypoints.py* module.
+
+#### fillKeypoints.py
+Module is a simple keypoints annotations editor. Keypoints, which are not detected can be easily dragged to it's proper position.
+Corrected annotations will be stored in file with input name + '_f'.
+
+Usage: `python fillKeypoints.y video annotations`:
+* video - path to video you want to open (it is independent of the keypoint annotations, so please make sure you typed correct path).
+* annotations - path to file with keypoints annotations you want to correct.
+
+* *Next* - next frame will be shown. Changes from previous will be saved (but not in the file yet).
+* *Previous* - previous frame will be shown. Changes from previous frame will be saved (but not in the file yet).
+* *Skip* - skips to next frame where not all keypoints are detected.
+* *Save* - saves all made changes into file.
+* *Reset* - resets all keypoints positions in current frame.
+
+Point colors:
+* *Green* - keypoints detected in annotations file (you can still drag it).
+* *Red* - keypoint not detected in current frame (it appears on place from previous frame).
+* *Purple* - keypoints has been edited. It will be saved after going to next frame.
+On the down left corner of window you can see name of currently edited keypoint.
+ 
 
 #### viewImagesAsVideo.py
 Module shows skeleton images as video.
