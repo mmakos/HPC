@@ -70,7 +70,7 @@ Current general pipeline of creating dataset (pose is recorded pose and X is num
     * press *Save* to save changes into file.
     * your file is writen as `poseXatY_f.p` (you can rename it to previous version file, but you will loose original annotations).
 5. Create long images from annotations:
-    * `python proceedVideo.py example/poseX/ -a example/pose/poseXatY_f.p -p example/pose`
+    * `python proceedVideo.py example/poseX/ -a example/pose/poseXatY_f.p -p example/pose -l`
     * you should receive one *.png* file `s0.png`. Rename it to `poseX.png`.
 6. Repeat steps 1-5 to create another skeleton for your pose.
     * After that you should have bunch of images in `/data/images/example/pose/` folder named `pose0.png pose1.png` etc.

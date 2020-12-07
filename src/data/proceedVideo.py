@@ -270,8 +270,8 @@ if __name__ == '__main__':
         if i == 0:
             initFrameDimensions()
             if args.write_video and dataPath is not None:
-                outputVidPath = dataPath + ".mp4"
-                videoWriter = cv2.VideoWriter( outputVidPath, cv2.VideoWriter_fourcc( *'mp4v' ), 30.0,
+                outputVidPath = args.video.strip( '/' ).split( '/' )[ -1 ] + '.mp4'
+                videoWriter = cv2.VideoWriter( dataPath + '/' + outputVidPath, cv2.VideoWriter_fourcc( *'mp4v' ), 30.0,
                                                ( c.frameWidth, c.frameHeight ) )
 
         if not args.view:

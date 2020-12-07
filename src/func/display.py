@@ -30,6 +30,12 @@ def displayPose( img, keypoints, pose ):
     cv2.putText( img, pose, ( x, y + textH - 1 ), cv2.FONT_HERSHEY_SIMPLEX, 0.5, ( 0, 0, 255 ), 2 )
 
 
-def skeleton( img, keypoints ):
-    for kp in keypoints:
-        cv2.circle( img, ( kp[ 0 ], kp[ 1 ] ), radius=3, color=( 0, 255, 0 ), thickness=-1 )
+def skeleton( img, kps ):
+    done = [ ]
+    for ki, k in enumerate( c.connections ):
+        for kj in k:  # for every neighbor of proceeded keypoint
+            if kj not in done:
+                cv2.line( img, ( int( kps[ ki ][ 0 ] ), int( kps[ ki ][ 1 ] ) ), ( int( kps[ kj ][ 0 ] ), int( kps[ kj ][ 1 ] ) ), ( 255, 0, 0 ), 2 )
+        done.append( ki )
+    for kp in kps:
+        cv2.circle( img, ( int( kp[ 0 ] ), int( kp[ 1 ] ) ), radius=3, color=( 0, 255, 0 ), thickness=-1 )

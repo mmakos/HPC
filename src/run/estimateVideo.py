@@ -29,6 +29,7 @@ def parseArgs():
     parser.add_argument( "-P", "--preview", help="View only mode.", action="store_true" )
     parser.add_argument( "-p", "--pose", help="Pose will be estimated.", action="store_true" )
     parser.add_argument( "-g", "--gpu_mode", help="Pose classification will be executed on GPU, but GPU can be out of memory", action="store_true" )
+    parser.add_argument( "-d", "--no_depth", help="Depth canal will be excluded.", action="store_true" )
     return parser.parse_known_args()
 
 
@@ -170,6 +171,8 @@ def getFrame():
         ret, frameColor = vid.read()
     else:
         raise TypeError( "Invalid video format." )
+    if args.no_depth and vType != 'reg':
+        frameDepth =  np.zeros( ( c.depthHeight, c.depthWidth ) )
     return frameColor, frameDepth
 
 
@@ -182,7 +185,7 @@ def proceedFrame():
     # getSkeletons gives for every human skeleton image
     image = datum.cvOutputData  # image is frame with drawn skeleton
 
-    rgbdKeypoints = mapToRGBD( datum.poseKeypoints, frameD )
+    rgbdKeypoints = mapToRGBD( datum.poseKeypoints, frameD, args.no_depth )
     # convert frame to skeleton image
     pos = []
     if args.pose:
@@ -210,8 +213,8 @@ if __name__ == '__main__':
     print( framesNumber, "frames to proceed." )
 
     if not args.preview:
-        opWrapper = initOpenPose()
         frame = Frame( getModel() )
+        opWrapper = initOpenPose()
 
     t = time()
     # main loop

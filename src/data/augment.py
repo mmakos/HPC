@@ -25,16 +25,16 @@ if not os.path.isdir( outputPath ):
 images = natsorted( os.listdir( inputPath ) )
 print( images )
 # creating small pics for different fps
-for name in images:
-    if name[ -4:] != '.png':
+for i in tqdm( range( len( images ) ), desc="Proceed" ):
+    if images[ i ][ -4:] != '.png':
         continue
-    skeleton = cv2.imread( inputPath + name )
+    skeleton = cv2.imread( inputPath + images[ i ] )
     skeletonLength = skeleton.shape[ 1 ]
-    for fps in tqdm( range( c.minOutputFrameRate, c.maxOutputFrameRate + 1, c.frameRateStep ), desc=f"Proceeding { name } skeleton" ):
+    for fps in range( c.minOutputFrameRate, c.maxOutputFrameRate + 1, c.frameRateStep ):
         image = []
         length = int( c.imgFrameRate * c.framesNumber / fps )  # length of subimage
         if length > skeletonLength:
             continue
         for start in range( skeletonLength - length + 1 ):
             image = cv2.resize( skeleton[ :, start: start + length ], ( c.framesNumber, c.keypointsNumber ), interpolation=cv2.INTER_AREA )
-            cv2.imwrite( f"{ outputPath }{ name.split( '.' )[ 0 ] }fps{ fps }start{ start }.png", image )
+            cv2.imwrite( f"{ outputPath }{ images[ i ].split( '.' )[ 0 ] }fps{ fps }start{ start }.png", image )

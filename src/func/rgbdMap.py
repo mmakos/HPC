@@ -5,7 +5,7 @@ from time import time
 
 # function maps given keypoints of all humans to RGBD image
 # keypoints are [ x cord, y cord, score ]
-def mapToRGBD( keypoints, depthCanal ):
+def mapToRGBD( keypoints, depthCanal, noDepth=False ):
     keypointsRGBD = []
     try:
         for human in keypoints:
@@ -28,7 +28,8 @@ def mapToRGBD( keypoints, depthCanal ):
                     humanRGBD.append( [ 0.0, 0.0, 0.0, 0.0 ] )
             # estimate not detected keypoints
             if pointsDetected >= c.minDetectedKeypoints:
-                estimateDepthZeros( humanRGBD )
+                if not noDepth:
+                    estimateDepthZeros( humanRGBD )
                 keypointsRGBD.append( humanRGBD )
     except TypeError:
         pass
