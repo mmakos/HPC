@@ -1,6 +1,6 @@
 import os
 
-pose = "sit"
+pose = "lean"
 
 for a in range( 100 ):
     if os.path.isfile( f"../../data/images/rs/{ pose }/{ pose }{ a }at0.p" ):

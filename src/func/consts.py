@@ -23,9 +23,9 @@ outputFrameRate = 10    # frame rate of output dataset (for proceeding)
 minLongImageLength = framesNumber
 
 # dataset augmentation
-imgFrameRate = 30           # frame rate of original train images
-minOutputFrameRate = 30      # train images min frame rate
-maxOutputFrameRate = 30     # train images max frame rate
+imgFrameRate = 15           # frame rate of original train images
+minOutputFrameRate = 15     # train images min frame rate
+maxOutputFrameRate = 15     # train images max frame rate
 frameRateStep = 1           # e.g. if 1 images will have frame rates: 5, 6, 7, 8, ..., 15
 
 # poses
@@ -42,7 +42,7 @@ poses = (
 )
 
 # training
-batchSize = 32
+batchSize = 128
 
 # used for estimation depth of not detected keypoints on depth canal
 connections = (

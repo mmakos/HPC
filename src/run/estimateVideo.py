@@ -213,8 +213,8 @@ if __name__ == '__main__':
     print( framesNumber, "frames to proceed." )
 
     if not args.preview:
-        frame = Frame( getModel() )
         opWrapper = initOpenPose()
+        frame = Frame( getModel() )
 
     t = time()
     # main loop

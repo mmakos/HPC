@@ -1,18 +1,17 @@
 import pickle
 import os
+from math import sin, cos, radians
+import numpy as np
 
-path = "../../data/images/rs/walk/"
+im = np.array( [ 100, 100, 100 ] )
+angle = radians( 180 )
 
+mat = np.array( [
+    [ cos( angle ), 0, sin( angle ) ],
+    [ 0, 1, 0 ],
+    [ -sin( angle ), 0, cos( angle ) ]
+] )
 
-def readSkels():
-    skeletons = []
-    beginFrames = []
-    keysFiles = os.listdir( path )
-    for keysFile in keysFiles:
-        if keysFile[ -2: ] == ".p":
-            skeletons.append( pickle.load( open( path + keysFile, "rb" ) ) )
-            beginFrames.append( int( keysFile.split( 'at' )[ 1 ].split( ".p" )[ 0 ] ) )
-    return skeletons, beginFrames
+im = np.matmul( mat, im )
 
-
-print( readSkels() )
+print( im )

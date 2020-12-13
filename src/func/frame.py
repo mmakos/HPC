@@ -57,7 +57,7 @@ class Frame:
 
     # functions classify pose and returns probabilities of poses
     def classifyPose( self, skeleton ):
-        return self.model.predict( ( cv2.rotate( skeleton.getSkeletonImg(), cv2.ROTATE_90_CLOCKWISE ) * 255 ).reshape( -1, c.keypointsNumber, c.framesNumber, 3 ) )
+        return self.model.predict( ( cv2.rotate( skeleton.getSkeletonImg(), cv2.ROTATE_90_CLOCKWISE ) ).reshape( -1, c.keypointsNumber, c.framesNumber, 3 ) )
 
     # function takes detected humans keypoints and return skeleton image for each human
     # this is equivalent to proceedFrame, but for creating dataset

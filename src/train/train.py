@@ -1,7 +1,7 @@
 import sys
 import argparse
 import numpy as np
-import os
+from matplotlib import pyplot as plt
 
 # os.environ[ 'TF_CPP_MIN_LOG_LEVEL' ] = '3'
 import tensorflow as tf
@@ -13,21 +13,22 @@ import consts as c
 
 def parseArgs():
     parser = argparse.ArgumentParser()
-    parser.add_argument( "dataset_name", help="Name or path to your dataset relative to /data/datasets." )
+    parser.add_argument( "train_ds", help="Name or path to your dataset relative to /data/datasets." )
+    parser.add_argument( "-v", "--validation_ds", help="Path to validation dataset relative to /data/datasets." )
     parser.add_argument( "-m", "--model_name", help="Name of model you want to continue training. If none, new model will be created." )
     parser.add_argument( "-o", "--output_model", help="Name of output model. If none, model won't be saved." )
     return parser.parse_known_args()[ 0 ]
 
 
-def readDataset():
-    with np.load( "../../data/datasets/" + args.dataset_name, allow_pickle=True ) as data:
+def readDataset( dsName ):
+    with np.load( "../../data/datasets/" + dsName, allow_pickle=True ) as data:
         img = data[ 'images' ]
         lab = data[ 'labels' ]
     print( "Dataset loaded." )
     return img, lab
 
 
-def getTrainTest( ds, datasetSize, trainSizeFactor ):
+def shuffleAndSplit( ds, datasetSize, trainSizeFactor ):
     if not 0 < trainSizeFactor <= 1:
         raise ValueError( "Train size factor must be in <0, 1>" )
     ds = ds.shuffle( datasetSize )
@@ -40,7 +41,7 @@ def getModel():
         print( "Model " + args.model_name + " loaded." )
     except Exception:
         print( "Creating new model." )
-        mod = model.getModel()
+        mod = model.getModel( "smallVGG" )
     print()
     print( mod.summary() )
     return mod
@@ -54,21 +55,44 @@ def saveModel():
         print( "Model not saved." )
 
 
+def showPlots( hist ):
+    accuracy = plt.figure( 0 )
+    plt.plot( hist[ 'accuracy' ] )
+    plt.plot( hist[ 'val_accuracy' ] )
+    plt.title( 'Model accuracy' )
+    plt.ylabel( 'accuracy' )
+    plt.xlabel( 'epoch' )
+    plt.legend( [ 'train', 'val' ], loc='upper left' )
+    loss = plt.figure( 1 )
+    plt.plot( hist[ 'loss' ] )
+    plt.plot( hist[ 'val_loss' ] )
+    plt.title( 'Model loss' )
+    plt.ylabel( 'loss' )
+    plt.xlabel( 'epoch' )
+    plt.legend( [ 'train', 'val' ], loc='upper left' )
+    plt.show()
+
+
 if __name__ == '__main__':
     args = parseArgs()
-    images, labels = readDataset()
-    m = getModel()
+    images, labels = readDataset( args.train_ds )
+    images = images / 255.0
     dataset = tf.data.Dataset.from_tensor_slices( ( images, labels ) )
-    trainDataset, testDataset = getTrainTest( dataset, len( images ), 1.0 )
+    if args.validation_ds is not None:
+        train, _ = shuffleAndSplit( dataset, len( images ), 1.0 )
+        images, labels = readDataset( args.validation_ds )
+        images = images / 255.0
+        dataset = tf.data.Dataset.from_tensor_slices( ( images, labels ) )
+        validation, _ = shuffleAndSplit( dataset, len( images ), 1.0 )
+    else:
+        train, validation = shuffleAndSplit( dataset, len( images ), 0.8 )
 
-    print( "Train dataset: " + str( trainDataset ) )
-    print( "Test dataset: " + str( testDataset ) )
+    m = getModel()
 
-    trainDataset = trainDataset.batch( c.batchSize )
-    testDataset = testDataset.batch( c.batchSize )
-    # trainDataset.reshape( -1, c.keypointsNumber, c.framesNumber, 3 )
-    m.fit( trainDataset, epochs=3, batch_size=c.batchSize )
+    train = train.batch( c.batchSize )
+    validation = validation.batch( c.batchSize )
+    history = m.fit( train, epochs=3, batch_size=c.batchSize, validation_data=validation )
     # testLoss, testAccuracy = m.evaluate( testDataset )
     # print( "Test loss = " + str( testLoss ) + "\nTest accuracy = " + str( testAccuracy ) )
-
     saveModel()
+    showPlots( history.history )

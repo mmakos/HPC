@@ -25,7 +25,7 @@ for _, poses, _ in os.walk( path ):
     for pose in poses:
         posePath = path + "/" + pose
         try:
-            label = int( pose.split( "_" )[ 1 ] )
+            label = int( pose.split( "_" )[ -1 ] )
             x = c.poses[ label ]
         except ( IndexError, ValueError ):
             continue

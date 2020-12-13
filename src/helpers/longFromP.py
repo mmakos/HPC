@@ -1,6 +1,6 @@
 import os
 
-pose = "sit"
+pose = "kneel"
 
 for s in range( 100 ):
     if os.path.isfile( f"../../data/images/rs/{ pose }/{ pose }{ s }at0.p" ):

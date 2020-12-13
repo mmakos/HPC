@@ -1,6 +1,6 @@
 import os
 
-pose = "sit"
+pose = "kneel"
 
 for v in range( 100 ):
     if os.path.isdir( f"../../data/videos/rs/{ pose }{ v }" ):
