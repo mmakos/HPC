@@ -10,7 +10,7 @@ sys.path.insert( 1, '../func' )
 import display
 import consts as c
 from frame import Frame
-from rgbdMap import mapToRGBD
+from preprocess import mapToRGBD
 
 dir_path = os.path.dirname( os.path.realpath( __file__ ) )
 sys.path.append( dir_path + '/../../externals/openpose/build/python/openpose/Release' )

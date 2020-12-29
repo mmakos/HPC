@@ -90,12 +90,14 @@ if __name__ == '__main__':
     else:
         train, validation = shuffleAndSplit( dataset, len( images ), 0.8 )
 
-    m = getModel()
+    baseModel = getModel()
+    baseModel.trainable = False
 
-    train = train.batch( c.batchSize )
-    validation = validation.batch( c.batchSize )
-    history = m.fit( train, epochs=3, batch_size=c.batchSize, validation_data=validation, initial_epoch=0 )
-    # testLoss, testAccuracy = m.evaluate( testDataset )
-    # print( "Test loss = " + str( testLoss ) + "\nTest accuracy = " + str( testAccuracy ) )
-    saveModel()
-    showPlots( history.history )
+
+    # train = train.batch( c.batchSize )
+    # validation = validation.batch( c.batchSize )
+    # history = m.fit( train, epochs=2, batch_size=c.batchSize, validation_data=validation )
+    # # testLoss, testAccuracy = m.evaluate( testDataset )
+    # # print( "Test loss = " + str( testLoss ) + "\nTest accuracy = " + str( testAccuracy ) )
+    # saveModel()
+    # showPlots( history.history )

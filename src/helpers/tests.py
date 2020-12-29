@@ -1,17 +1,12 @@
-import pickle
-import os
-from math import sin, cos, radians
+import preprocess
+import consts as c
 import numpy as np
 
-im = np.array( [ 100, 100, 100 ] )
-angle = radians( 180 )
+human = [ [ 0, 0, 0, 0 ], [ 6, 13, 0, 1 ], [ 4, 13, 0, 1 ], [ 3, 10, 0, 1 ], [ 1, 11, 0, 1 ],
+          [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 6, 8, 0, 1 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ],
+          [ 7, 8, 0, 1 ], [ 8, 5, 0, 1 ], [ 9, 1, 0, 5 ] ]
 
-mat = np.array( [
-    [ cos( angle ), 0, sin( angle ) ],
-    [ 0, 1, 0 ],
-    [ -sin( angle ), 0, cos( angle ) ]
-] )
+print( preprocess.estimateNotDetectedKeypoints( human ) )
 
-im = np.matmul( mat, im )
 
-print( im )
+print( human[ 3 ] )

@@ -80,7 +80,7 @@ if __name__ == "__main__":
             cv2.imwrite( outputPath + img[ :-4 ] + '_m.png', mirrorImage( cv2.imread( inputPath + img ) ) )
 
     if args.rotate:
-        for ang in tqdm( range( 1, 360 ), desc="Rotate" ):
+        for ang in tqdm( range( 1, 360, 5 ), desc="Rotate" ):
             for img in images:
                 cv2.imwrite( f"{ outputPath }{ img[ :-4 ] }_r{ ang }.png", rotate( cv2.imread( inputPath + img ).astype( 'float' ), radians( ang ) ) )
 
@@ -94,7 +94,7 @@ if __name__ == "__main__":
                 length = int( c.imgFrameRate * c.framesNumber / fps )  # length of subimage
                 if length > skeletonLength:
                     continue
-                for start in range( skeletonLength - length + 1 ):
+                for start in range( 0, skeletonLength - length + 1, c.nextStartStep ):
                     image = cv2.resize( skeleton[ :, start: start + length ], ( c.framesNumber, c.keypointsNumber ),
                                         interpolation=cv2.INTER_AREA )
                     cv2.imwrite( f"{ smallPath }{ images[ i ].split( '.' )[ 0 ] }fps{ fps }start{ start }.png", image )
