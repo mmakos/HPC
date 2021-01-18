@@ -4,6 +4,7 @@
 import numpy as np
 import consts as c
 from math import sqrt
+from preprocess import estimateNotDetectedKeypoints
 
 
 class Skeleton:
@@ -11,14 +12,22 @@ class Skeleton:
     # to create new skeleton we have to give actual keypoints of this skeleton
     # coordinates are normalised to [0, 1]
     def __init__( self, keypoints, skeletonId, boundingBox ):
+        estimateNotDetectedKeypoints( keypoints )
         self.lastKeypoints = keypoints
         self.id = skeletonId
         self.boundingBox = boundingBox  # bounding box of last keypoints set (for faster operations)
         self.skeletonImg = np.zeros( ( c.framesNumber, c.keypointsNumber, 3 ) )
-        self.skeletonImg[ c.framesNumber - 1 ] = normalize( keypoints, boundingBox )
+        normalisedKeypoints = normalize( keypoints, self.boundingBox )
+        for i in range( c.framesNumber ):
+            self.skeletonImg[ i ] = normalisedKeypoints
+        # self.skeletonImg[ c.framesNumber - 1 ] = normalize( keypoints, boundingBox )
 
     # Functions updates skeleton from given frame keypoints (original coordinates)
     def updateSkeleton( self, keypoints, boundingBox ):
+        # after tracking we can estimate not detected keypoints
+        # but only by symmetry etc (no interpolation of neighbour frames)
+        if c.fillNotDetected:
+            estimateNotDetectedKeypoints( keypoints )
         self.lastKeypoints = keypoints
         self.boundingBox = boundingBox
         self.updateImg()
@@ -60,14 +69,13 @@ def normalize( keypoints, boundingBox ):
                boundingBox[ 1 ][ 0 ] - boundingBox[ 1 ][ 1 ],
                boundingBox[ 2 ][ 0 ] - boundingBox[ 2 ][ 1 ] ]
 
-    if bbDims[ 2 ] == 0.0:
-        bbDims[ 2 ] = 1
-    return [ [ ( i[ 0 ] - boundingBox[ 0 ][ 1 ] ) / bbDims[ 0 ],
-               ( i[ 1 ] - boundingBox[ 1 ][ 1 ] ) / bbDims[ 1 ],
-               ( i[ 2 ] - boundingBox[ 2 ][ 1 ] ) / bbDims[ 2 ] ]
-             for i in keypoints ]
-    # except ZeroDivisionError:
-    #     return [ [ ( i[ 0 ] - boundingBox[ 0 ][ 1 ] ) / ( bbDims[ 0 ] ),
-    #                ( i[ 1 ] - boundingBox[ 1 ][ 1 ] ) / ( bbDims[ 1 ] ),
-    #                ( i[ 2 ] - boundingBox[ 2 ][ 1 ] ) / ( bbDims[ 2 ] + 1 ) ]
-    #              for i in keypoints ]
+    try:
+        return [ [ ( i[ 0 ] - boundingBox[ 0 ][ 1 ] ) / bbDims[ 0 ],
+                   ( i[ 1 ] - boundingBox[ 1 ][ 1 ] ) / bbDims[ 1 ],
+                   ( i[ 2 ] - boundingBox[ 2 ][ 1 ] ) / bbDims[ 2 ] ]
+                 for i in keypoints ]
+    except ZeroDivisionError:
+        return [ [ ( i[ 0 ] - boundingBox[ 0 ][ 1 ] ) / ( bbDims[ 0 ] + 1 ),
+                   ( i[ 1 ] - boundingBox[ 1 ][ 1 ] ) / ( bbDims[ 1 ] + 1 ),
+                   ( i[ 2 ] - boundingBox[ 2 ][ 1 ] ) / ( bbDims[ 2 ] + 1 ) ]
+                 for i in keypoints ]

@@ -10,7 +10,7 @@ sys.path.insert( 1, '../func' )
 import display
 import consts as c
 from frame import Frame
-from preprocess import mapToRGBD
+from preprocess import preprocess
 
 dir_path = os.path.dirname( os.path.realpath( __file__ ) )
 sys.path.append( dir_path + '/../../externals/openpose/build/python/openpose/Release' )
@@ -158,12 +158,12 @@ def proceedFrame():
         image = datum.cvOutputData  # image is frame with drawn skeleton
 
         # map to RGBD
-        rgbdKeypoints = mapToRGBD( datum.poseKeypoints, frameD )
+        rgbdKeypoints = preprocess( datum.poseKeypoints, frameD )
     else:
         image = frameRGB
         idx = i - beginFrame
         if idx >= 0:
-            rgbdKeypoints = mapToRGBD( [ annotations[ idx ] ], frameD )
+            rgbdKeypoints = preprocess( [ annotations[ idx ] ], frameD )
             display.skeleton( image, annotations[ idx ] )
         else:
             rgbdKeypoints = []

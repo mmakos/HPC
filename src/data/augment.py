@@ -10,6 +10,7 @@ from tqdm import tqdm
 from natsort import natsorted
 import numpy as np
 from math import cos, sin, radians
+from random import randint
 
 
 def parseArgs():
@@ -18,7 +19,7 @@ def parseArgs():
     parser.add_argument( "-o", "--output", help="Path to folder with augmented images relative to /data/images." )
     parser.add_argument( "-s", "--small", help="Path to the folder with small images. If none, then small images won't be created." )
     parser.add_argument( "-m", "--mirror", help="Select if you want to mirror poses.", action="store_true" )
-    parser.add_argument( "-r", "--rotate", help="Select if you want to rotate poses.", action="store_true" )
+    parser.add_argument( "-r", "--rotate", type=int, help="Select if you want to rotate poses." )
     return parser.parse_known_args()[ 0 ]
 
 
@@ -34,12 +35,18 @@ def rotate180( im ):
     return im
 
 
-def rotate( im, angle ):
+def rotate( im, angleOX, angleOY ):
     mat = np.array( [
-        [ cos( angle ), 0, sin( angle ) ],
-        [ 0, 1, 0 ],
-        [ -sin( angle ), 0, cos( angle ) ]
+        [ 1, 0, 0 ],
+        [ 0, cos( angleOX ), -sin( angleOX ) ],
+        [ 0, sin( angleOX ), cos( angleOX ) ]
     ] )
+    # mat is rotation matrix about y and then x axis
+    mat = np.array( [
+        [ cos( angleOY ), 0, sin( angleOY ) ],
+        [ 0, 1, 0 ],
+        [ -sin( angleOY ), 0, cos( angleOY ) ]
+    ] ) @ mat
     for kp, _ in enumerate( im ):
         for f, _ in enumerate( im[ kp ] ):
             im[ kp, f ] = mat @ im[ kp, f ]
@@ -79,10 +86,18 @@ if __name__ == "__main__":
         for img in images:
             cv2.imwrite( outputPath + img[ :-4 ] + '_m.png', mirrorImage( cv2.imread( inputPath + img ) ) )
 
-    if args.rotate:
-        for ang in tqdm( range( 1, 360, 5 ), desc="Rotate" ):
+    if args.rotate is not None:
+        for i in tqdm( range( args.rotate ), desc="Rotate" ):
+            angles = [ ( 0, 0 ) ]
             for img in images:
-                cv2.imwrite( f"{ outputPath }{ img[ :-4 ] }_r{ ang }.png", rotate( cv2.imread( inputPath + img ).astype( 'float' ), radians( ang ) ) )
+                while True:
+                    angX = randint( -c.maxUpDownRotationAngle, c.maxUpDownRotationAngle )
+                    angY = randint( 0, 359 )
+                    if ( angX, angY ) not in angles:
+                        angles.append( ( angX, angY ) )
+                        break   # we don't want to do the same rotation twice
+                cv2.imwrite( f"{ outputPath }{ img[ :-4 ] }_rx{ angX }ry{ angY }.png",
+                             rotate( cv2.imread( inputPath + img ).astype( 'float' ), radians( angX ), radians( angY ) ) )
 
     if args.small is not None:
         # creating small pics for different fps

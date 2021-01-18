@@ -18,10 +18,10 @@ def displaySmallFrameNumber( img, number ):
 def displayPose( img, keypoints, pose ):
     keypoints = [ i for i in keypoints if i[ 3 ] >= c.keypointThreshold ]
     bb = frame.getBoundingBox( keypoints )
-    x = bb[ 0 ][ 1 ] - 10
-    y = bb[ 1 ][ 1 ] - 10
-    x2 = bb[ 0 ][ 0 ] + 10
-    y2 = bb[ 1 ][ 0 ] + 10
+    x = int( bb[ 0 ][ 1 ] ) - 10
+    y = int( bb[ 1 ][ 1 ] ) - 10
+    x2 = int( bb[ 0 ][ 0 ] ) + 10
+    y2 = int( bb[ 1 ][ 0 ] ) + 10
     x = 0 if x < 0 else x
     y = 0 if y < 0 else y
     cv2.rectangle( img, ( x, y ), ( x2, y2 ), ( 0, 255, 0 ), 2 )

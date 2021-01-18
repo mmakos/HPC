@@ -9,7 +9,8 @@ keypointsNumber = 15
 
 # keypoints detection
 keypointThreshold = 0.1
-minDetectedKeypoints = 5
+minDetectedKeypoints = 8
+fillNotDetected = True
 
 # tracking
 maxDeltaCoefficient = 0.5     # F
@@ -28,7 +29,14 @@ imgFrameRate = 15           # frame rate of original train images
 minOutputFrameRate = 15     # train images min frame rate
 maxOutputFrameRate = 15     # train images max frame rate
 frameRateStep = 1           # e.g. if 1 images will have frame rates: 5, 6, 7, 8, ..., 15
-nextStartStep = 1           # e.g. for 4 image will be taken from frame 0-32, 4-36, 8-40 itd.
+nextStartStep = 8           # e.g. for 4 image will be taken from frame 0-32, 4-36, 8-40 itd.
+maxUpDownRotationAngle = 30
+
+
+# training
+batchSize = 128
+epochs = 15
+learningRate = 0.0001
 
 # poses
 poses = (
@@ -42,9 +50,6 @@ poses = (
     "jump",
     "dance",
 )
-
-# training
-batchSize = 64
 
 # used for estimation depth of not detected keypoints on depth canal
 connections = (

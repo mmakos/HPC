@@ -21,9 +21,10 @@ class Frame:
         if self.live:
             self.frameTime = min( self.prevTime - time(), c.maxFrameTime )
             self.prevTime = time()
-        newSkeletons = []       # here will be all detected skeletons
         if not humans:
+            self.skeletons = []
             return []
+        newSkeletons = []       # here will be all detected skeletons
         for human in humans:
             self.proceedHuman( human, newSkeletons )
         # self.skeletons = [ s for s in newSkeletons if s is not None ]   # we save only existing skeletons
@@ -63,6 +64,7 @@ class Frame:
     # this is equivalent to proceedFrame, but for creating dataset
     def getSkeletons( self, humans ):
         if not humans:
+            self.skeletons = []
             return []
         newSkeletons = []
         for human in humans:

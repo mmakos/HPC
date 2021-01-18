@@ -21,6 +21,15 @@ def parseArgs():
     return parser.parse_known_args()[ 0 ]
 
 
+def changeKeyOrder( img ):
+    order = ( 0, 2, 1, 5, 3, 6, 4, 7, 9, 8, 12, 10, 13, 11, 14 )
+    for j, i in enumerate( img ):
+        im = np.zeros( shape=np.shape( i ) )
+        for k, o in enumerate( order ):
+            im[ k ] = i[ o ]
+        img[ j ] = im
+
+
 def readDataset( dsName ):
     with np.load( "../../data/datasets/" + dsName, allow_pickle=True ) as data:
         img = data[ 'images' ]
@@ -28,6 +37,7 @@ def readDataset( dsName ):
     print( "Dataset loaded." )
     if args.no_z:
         img[ :, :, :, 0 ] = np.zeros( img.shape[ :3 ] )
+    changeKeyOrder( img )
     return img, lab
 
 
@@ -91,11 +101,16 @@ if __name__ == '__main__':
         train, validation = shuffleAndSplit( dataset, len( images ), 0.8 )
 
     m = getModel()
-
+    mc = tf.keras.callbacks.ModelCheckpoint(
+        filepath='../../data/models/' + args.output_model,
+        save_weights_only=False,
+        monitor='val_accuracy',
+        mode='max',
+        save_best_only=True )
     train = train.batch( c.batchSize )
     validation = validation.batch( c.batchSize )
-    history = m.fit( train, epochs=3, batch_size=c.batchSize, validation_data=validation, initial_epoch=0 )
+    history = m.fit( train, epochs=c.epochs, batch_size=c.batchSize, validation_data=validation, callbacks=[ mc ] )
     # testLoss, testAccuracy = m.evaluate( testDataset )
     # print( "Test loss = " + str( testLoss ) + "\nTest accuracy = " + str( testAccuracy ) )
-    saveModel()
+    # saveModel()
     showPlots( history.history )

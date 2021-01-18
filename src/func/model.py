@@ -14,6 +14,8 @@ def getModel( m="smallVGG" ):
         return getSmallVGG2()
     elif m == "VGG16":
         return getVGG16()
+    elif m == "noCNN":
+        return getNoCNN()
 
 
 def getSmallVGG():
@@ -36,7 +38,7 @@ def getSmallVGG():
 
     # end - now we have vector
     model.add( layers.Dense( len( c.poses ), activation='softmax' ) )
-    model.compile( optimizer=optimizers.Adam( learning_rate=0.001 ),
+    model.compile( optimizer=optimizers.Adam( learning_rate=c.learningRate ),
                    loss='sparse_categorical_crossentropy',
                    metrics=[ 'accuracy' ] )
     return model
@@ -62,7 +64,7 @@ def getSmallVGG2():
 
     # end - now we have vector
     model.add( layers.Dense( len( c.poses ), activation='softmax' ) )
-    model.compile( optimizer=optimizers.SGD( learning_rate=0.05, momentum=0.9 ),
+    model.compile( optimizer=optimizers.SGD( learning_rate=c.learningRate, momentum=0.9 ),
                    loss='sparse_categorical_crossentropy',
                    metrics=[ 'accuracy' ] )
     return model
@@ -109,6 +111,18 @@ def getVGG16():
 
     # end - now we have vector
     model.add( layers.Dense( len( c.poses ), activation='softmax' ) )
+    model.compile( optimizer='adam',
+                   loss='sparse_categorical_crossentropy',
+                   metrics=[ 'accuracy' ] )
+    return model
+
+
+def getNoCNN():
+    model = models.Sequential( [
+        layers.Flatten( input_shape=( c.keypointsNumber, c.framesNumber, 3 ) ),
+        layers.Dense( 128, activation='relu' ),
+        layers.Dense( len( c.poses ), activation='softmax' )
+    ] )
     model.compile( optimizer='adam',
                    loss='sparse_categorical_crossentropy',
                    metrics=[ 'accuracy' ] )

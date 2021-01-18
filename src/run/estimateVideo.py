@@ -27,7 +27,7 @@ def parseArgs():
     parser.add_argument( "-m", "--model", default="5static", help="Path to model relative to /data/models." )
     parser.add_argument( "-w", "--write_name", help="Name of output video. If none, video will not be saved." )
     parser.add_argument( "-P", "--preview", help="View only mode.", action="store_true" )
-    parser.add_argument( "-p", "--pose", help="Pose will be estimated.", action="store_true" )
+    parser.add_argument( "-p", "--no_pose", help="Pose will be estimated.", action="store_true" )
     parser.add_argument( "-g", "--gpu_mode", help="Pose classification will be executed on GPU, but GPU can be out of memory", action="store_true" )
     parser.add_argument( "-d", "--no_depth", help="Depth canal will be excluded.", action="store_true" )
     return parser.parse_known_args()
@@ -74,7 +74,7 @@ def getModel():
     if not args.gpu_mode:
         tf.config.list_physical_devices( 'GPU' )
         try:
-            # Disable all GPUS
+            # Disable all GPUs
             tf.config.set_visible_devices( [], 'GPU' )
             visible_devices = tf.config.get_visible_devices()
             for device in visible_devices:
@@ -188,7 +188,7 @@ def proceedFrame():
     rgbdKeypoints = mapToRGBD( datum.poseKeypoints, frameD, args.no_depth )
     # convert frame to skeleton image
     pos = []
-    if args.pose:
+    if not args.no_pose:
         pos = frame.proceedFrame( rgbdKeypoints )
 
     return image, pos, rgbdKeypoints
@@ -234,7 +234,7 @@ if __name__ == '__main__':
             for j, human in enumerate( humans ):
                 try:
                     display.displayPose( frameRGB, human, str( poses[ j ][ 1 ] ) + ": " +
-                                     c.poses[ np.argmax( poses[ j ][ 0 ] ) ] + f" - { int( np.max( poses[ j ][ 0 ] ) * 100 ) }%" )
+                                         c.poses[ np.argmax( poses[ j ][ 0 ] ) ] + f" - { int( np.max( poses[ j ][ 0 ] ) * 100 ) }%" )
                 except:
                     pass
 
