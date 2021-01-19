@@ -5,12 +5,13 @@ import cv2
 import sys
 sys.path.insert( 1, '../func' )
 import consts as c
+import os
 
 
 def parseArgs():
     parser = argparse.ArgumentParser()
     parser.add_argument( "-v", "--video", type=str, help="Name of video you want to estimate relative to /data/videos." )
-    parser.add_argument( "-h", "--hybrid", help="Select if you want to use hybrid method.", action="store_true" )
+    parser.add_argument( "-c", "--hybrid", help="Select if you want to use hybrid method.", action="store_true" )
     parser.add_argument( "-w", "--write_name", help="Name of output video. If none, video will not be saved." )
     parser.add_argument( "-p", "--no_pose", help="Pose will be estimated.", action="store_true" )
     parser.add_argument( "-g", "--gpu_mode", help="Pose classification will be executed on GPU, but GPU can be out of memory", action="store_true" )
@@ -42,14 +43,21 @@ if __name__ == "__main__":
     args = allArgs[ 0 ]
     dataPath = out = None
 
+    # change video path to relative to /data/videos
+    if args.video is not None:
+        args.video = "../../data/videos/" + args.video
+        if not os.path.isfile( args.video ) and not os.path.isdir( args.video ):
+            print( "No video found. Please make sure you typed correct path to your video." )
+            exit()
+    # change output video name to relative (if needed)
+    if args.write_name is not None:
+        args.write_name = "../../data/videos/" + args.write_name + ".mp4"
+
     # create camera stream or video
     camera = Camera( video=args.video, noDepth=args.no_depth )
     # create wrapper (it will do all to classify poses on image)
     wrapper = Wrapper( model=( "static", "dynamic" ) if args.hybrid else "allRot",
                        gpuMode=args.gpu_mode, opParams=getOpParams() )
-    # change output video name to relative (if needed)
-    if args.write_name is not None:
-        args.write_name = "../../data/videos/" + args.write_name + ".mp4"
 
     firstFrame = True
     while True:

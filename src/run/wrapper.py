@@ -66,7 +66,8 @@ class Wrapper:
         self.opWrapper.configure( opParams )
         self.opWrapper.start()
 
-    def proceed( self, frameRGB, frameD, noDepth=False, noPose=False, noSkeleton=False, showTime=True ):
+    def proceed( self, frame, noDepth=False, noPose=False, noSkeleton=False, showTime=True ):
+        frameRGB, frameD = frame
         if self.frameNumber == 0:
             try:
                 c.frameHeight, c.frameWidth, _ = frameRGB.shape

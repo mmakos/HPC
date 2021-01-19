@@ -7,7 +7,7 @@ import consts as c
 
 
 class Camera:
-    def __init__( self, video=None, noDepth=False, relativePath=True ):
+    def __init__( self, video=None, noDepth=False ):
         self.noDepth = noDepth
         self.vType = None
         self.colorStream = None
@@ -15,31 +15,27 @@ class Camera:
         self.vid = None
         self.videoName = video
         self.framesNumber = None
-        self.__getStreams( relativePath )
+        self.__getStreams()
 
-    def __getStreams( self, relativePath ):
-        if self.videoName is not None:
-            if relativePath:
-                video = "../../data/videos/" + self.videoName
-            if not os.path.isfile( self.videoName ) and not os.path.isdir( self.videoName ):
-                raise FileNotFoundError( "No video found. Please make sure you typed correct path to your video." )
-
-        self.videoName = self.videoName
+    def __getStreams( self ):
         if not self.videoName:  # stream
             self.vType = 'rs'
             print( "Opening RealSense stream..." )
-            import pyrealsense2 as rs
-            vid = rs.pipeline()
-            vid.start()
-            self.framesNumber = "Infinite number of"
+            try:
+                import pyrealsense2 as rs
+                self.vid = rs.pipeline()
+                self.vid.start()
+                self.framesNumber = "Infinite number of"
+            except RuntimeError:
+                raise FileNotFoundError( "No available streams detected." )
         elif self.videoName[ -4: ] == ".oni":
             self.vType = 'oni'
             print( "Opening OpenNI file..." )
             from primesense import openni2
-            vid = openni2.Device.open_file( self.videoName )
-            self.colorStream = vid.create_color_stream()
+            self.vid = openni2.Device.open_file( self.videoName )
+            self.colorStream = self.vid.create_color_stream()
             self.colorStream.start()
-            self.depthStream = vid.create_depth_stream()
+            self.depthStream = self.vid.create_depth_stream()
             self.depthStream.start()
             self.framesNumber = self.colorStream.get_number_of_frames()
         # RealSense video / tiago video
@@ -60,15 +56,15 @@ class Camera:
         elif self.videoName[ -1 ] == "/" or self.videoName[ -1 ] == "\\":
             self.vType = 'img'
             print( "Opening video from images..." )
-            vid = sorted( os.listdir( self.videoName ) )  # vid is array of file names
-            self.framesNumber = len( vid )
+            self.vid = sorted( os.listdir( self.videoName ) )  # vid is array of file names
+            self.framesNumber = len( self.vid )
             self.colorStream = 0
             self.depthStream = 1
         # Regular video
         elif self.videoName[ -4: ] == ".mp4" or self.videoName[ -4: ] == ".avi" or self.videoName[ -4: ] == ".mov":
             self.vType = 'reg'
             print( "Opening regular video" )
-            vid = cv2.VideoCapture( self.videoName )
+            self.vid = cv2.VideoCapture( self.videoName )
             self.framesNumber = int( vid.get( cv2.CAP_PROP_FRAME_COUNT ) )
         else:
             raise TypeError( "Unsupported video type." )
