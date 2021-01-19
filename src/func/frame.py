@@ -7,9 +7,10 @@ from time import time
 
 # class to proceed frames, remembering previous skeletons ec.
 class Frame:
-    def __init__( self, model=None, live=True ):
+    def __init__( self, model=None, dynModel=None, live=True ):
         self.skeletons = []
         self.model = model
+        self.dynModel = dynModel
         self.lastSkeletonId = 0
         self.live = live
         self.prevTime = time()

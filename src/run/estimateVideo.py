@@ -172,7 +172,7 @@ def getFrame():
     else:
         raise TypeError( "Invalid video format." )
     if args.no_depth and vType != 'reg':
-        frameDepth =  np.zeros( ( c.depthHeight, c.depthWidth ) )
+        frameDepth = np.zeros( ( c.depthHeight, c.depthWidth ) )
     return frameColor, frameDepth
 
 
