@@ -37,7 +37,7 @@ def getSmallVGG():
     model.add( layers.GlobalAveragePooling2D() )
 
     # end - now we have vector
-    model.add( layers.Dense( len( c.poses ), activation='softmax' ) )
+    model.add( layers.Dense( 8, activation='softmax' ) )
     model.compile( optimizer=optimizers.Adam( learning_rate=c.learningRate ),
                    loss='sparse_categorical_crossentropy',
                    metrics=[ 'accuracy' ] )

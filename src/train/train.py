@@ -37,7 +37,6 @@ def readDataset( dsName ):
     print( "Dataset loaded." )
     if args.no_z:
         img[ :, :, :, 0 ] = np.zeros( img.shape[ :3 ] )
-    changeKeyOrder( img )
     return img, lab
 
 
@@ -68,22 +67,28 @@ def saveModel():
         print( "Model not saved." )
 
 
-def showPlots( hist ):
-    accuracy = plt.figure( 0 )
+def showPlots( hist, save=None ):
+    # accuracy = plt.figure( 0 )
     plt.plot( hist[ 'accuracy' ] )
     plt.plot( hist[ 'val_accuracy' ] )
     plt.title( 'Model accuracy' )
     plt.ylabel( 'accuracy' )
     plt.xlabel( 'epoch' )
     plt.legend( [ 'train', 'val' ], loc='upper left' )
-    loss = plt.figure( 1 )
+    if save is not None:
+        plt.savefig( f"../../../thesis/figures/dynamic{save}Acc{c.epochs}.png" )
+    plt.clf()
+    # loss = plt.figure( 1 )
     plt.plot( hist[ 'loss' ] )
     plt.plot( hist[ 'val_loss' ] )
     plt.title( 'Model loss' )
     plt.ylabel( 'loss' )
     plt.xlabel( 'epoch' )
     plt.legend( [ 'train', 'val' ], loc='upper left' )
-    plt.show()
+    if save is not None:
+        plt.savefig( f"../../../thesis/figuresTemp/dynamic{save}Loss{c.epochs}.png" )
+    plt.clf()
+    # plt.show()
 
 
 if __name__ == '__main__':
@@ -100,17 +105,29 @@ if __name__ == '__main__':
     else:
         train, validation = shuffleAndSplit( dataset, len( images ), 0.8 )
 
-    m = getModel()
-    mc = tf.keras.callbacks.ModelCheckpoint(
-        filepath='../../data/models/' + args.output_model,
-        save_weights_only=False,
-        monitor='val_accuracy',
-        mode='max',
-        save_best_only=True )
     train = train.batch( c.batchSize )
     validation = validation.batch( c.batchSize )
-    history = m.fit( train, epochs=c.epochs, batch_size=c.batchSize, validation_data=validation, callbacks=[ mc ] )
-    # testLoss, testAccuracy = m.evaluate( testDataset )
-    # print( "Test loss = " + str( testLoss ) + "\nTest accuracy = " + str( testAccuracy ) )
-    # saveModel()
-    showPlots( history.history )
+
+    bestAcc = 0.8585
+    number = 0
+    while True:
+        args.output_model = args.output_model[ :-1 ] + str( number )
+        m = getModel()
+        mc = tf.keras.callbacks.ModelCheckpoint(
+            filepath='../../data/models/' + args.output_model,
+            save_weights_only=False,
+            monitor='val_accuracy',
+            mode='max',
+            save_best_only=True )
+        history = m.fit( train, epochs=c.epochs, batch_size=c.batchSize, validation_data=validation, callbacks=[ mc ] )
+
+        acc = max( history.history[ 'val_accuracy' ] )
+        idx = history.history[ 'val_accuracy' ].index( acc )
+        loss = history.history[ 'val_loss' ][ idx ]
+        if acc > bestAcc:
+            bestAcc = acc
+            showPlots( history.history, number )
+            file = open( "../../info2.txt", "a" )
+            file.write( f"\n{ args.output_model }, accuracy = {acc}, loss = {loss}, batch size = {c.batchSize}, after epoch {idx + 1}" )
+            file.close()
+            number = ( number + 1 ) % 2

@@ -3,18 +3,17 @@ frameWidth = 640
 frameHeight = 480
 depthWidth = 640
 depthHeight = 480
-frameDepth = 10000    # to set
 framesNumber = 32
 keypointsNumber = 15
 
 # keypoints detection
-keypointThreshold = 0.1
-minDetectedKeypoints = 8
-fillNotDetected = True
+keypointThreshold = 0.1     # below this threshold, keypoints from openPose are not considered
+minDetectedKeypoints = 8    # minimum amount of detected keypoints for classifying pose
+fillNotDetected = True      # fills not detected keypoints with several algorithms (gives better accuracy)
 
 # tracking
 maxDeltaCoefficient = 0.5     # F
-probThreshold = 0.1
+probThreshold = 0.1     # probability to consider two skeletons as the same skeleton
 frameTime = 0.333       # 10 FPS
 maxFrameTime = 1 / 5    # if live frame time is greater, then pose will estimated for this value, (interpolation for 1FPS makes no sense)
 inputFrameRate = 30     # frame rate of input (for proceeding and estimating)
@@ -32,11 +31,16 @@ frameRateStep = 1           # e.g. if 1 images will have frame rates: 5, 6, 7, 8
 nextStartStep = 8           # e.g. for 4 image will be taken from frame 0-32, 4-36, 8-40 itd.
 maxUpDownRotationAngle = 30
 
-
 # training
-batchSize = 128
-epochs = 15
+batchSize = 64
+epochs = 50
 learningRate = 0.0001
+
+# hybrid
+distancePoints = ( 9, 10, 11, 12, 13, 14 )  # tuple of points, which defines distance to categorize pose to dyn or static
+statDynThreshold = 1695     # distance below which poses are static and above - dynamic
+xDistCoefficient = 1
+yDistCoefficient = 1
 
 # poses
 poses = (

@@ -1,6 +1,6 @@
 import os
 
-pose = "sit"
+pose = "lie"
 frames = 1
 
 try:

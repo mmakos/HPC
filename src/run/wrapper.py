@@ -66,7 +66,7 @@ class Wrapper:
         self.opWrapper.configure( opParams )
         self.opWrapper.start()
 
-    def proceed( self, frame, noDepth=False, noPose=False, noSkeleton=False, showTime=True ):
+    def proceed( self, frame, noDepth=False, noPose=False, noSkeleton=False, noTime=False ):
         frameRGB, frameD = frame
         if self.frameNumber == 0:
             try:
@@ -96,7 +96,7 @@ class Wrapper:
                                      f" - { int( np.max( poses[ j ][ 0 ] ) * 100 ) }%" )
             except:
                 pass
-        if showTime:
+        if not noTime:
             display.displayFrameTime( frameRGB, time() - self.time )
             self.time = time()
 

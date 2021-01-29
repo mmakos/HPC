@@ -1,8 +1,8 @@
 import os
 
-pose = "lean"
+pose = "lie"
 
-for a in range( 100 ):
+for a in range( 8, 100 ):
     if os.path.isfile( f"../../data/images/rs/{ pose }/{ pose }{ a }at0.p" ):
         os.system( f"python ../data/fillKeypoints.py rs/{ pose }{ a }/ -p rs/{ pose }/{ pose }{ a }at0.p" )
         os.remove( f"../../data/images/rs/{ pose }/{ pose }{ a }at0.p" )

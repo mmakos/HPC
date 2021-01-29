@@ -30,9 +30,9 @@ class Skeleton:
             estimateNotDetectedKeypoints( keypoints )
         self.lastKeypoints = keypoints
         self.boundingBox = boundingBox
-        self.updateImg()
+        self.__updateImg()
 
-    def updateImg( self ):
+    def __updateImg( self ):
         # all columns (frames) need to be swap left
         for i in range( c.framesNumber - 1 ):
             self.skeletonImg[ i ] = self.skeletonImg[ i + 1 ]
@@ -53,6 +53,14 @@ class Skeleton:
             if sab[ i ] < 0:
                 sab[ i ] = 0
         return np.mean( sab )
+
+    # function returns sum of distances of particular point between all frames
+    def getPointsDistance( self, points=( 9, 10, 11, 12, 13, 14 ) ):
+        moveSum = np.zeros( shape=3 )
+        for k in points:
+            for f in range( 1, 32 ):
+                moveSum = np.add( moveSum, np.fabs( np.subtract( self.skeletonImg[ k, f ], self.skeletonImg[ k, f - 1 ] ) ) )
+        return moveSum[ 0 ] * c.xDistCoefficient + moveSum[ 1 ] * c.yDistCoefficient
 
     def getSkeletonImg( self ):
         return self.skeletonImg

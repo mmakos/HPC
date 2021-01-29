@@ -56,7 +56,9 @@ if __name__ == "__main__":
     # create camera stream or video
     camera = Camera( video=args.video, noDepth=args.no_depth )
     # create wrapper (it will do all to classify poses on image)
-    wrapper = Wrapper( model=( "static", "dynamic" ) if args.hybrid else "allRot",
+    # if you want to load one model, just give a name of this model
+    # if you want to load two models (static and dynamic for hybrid solution) give a tuple with names of models
+    wrapper = Wrapper( model=( "Static", "Dynamic" ) if args.hybrid else "Static",
                        gpuMode=args.gpu_mode, opParams=getOpParams() )
 
     firstFrame = True

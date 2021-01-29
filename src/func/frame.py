@@ -27,18 +27,22 @@ class Frame:
             return []
         newSkeletons = []       # here will be all detected skeletons
         for human in humans:
-            self.proceedHuman( human, newSkeletons )
+            self.__proceedHuman( human, newSkeletons )
         # self.skeletons = [ s for s in newSkeletons if s is not None ]   # we save only existing skeletons
         self.skeletons = newSkeletons
         poses = []
-        for skeleton in newSkeletons:
-            # if skeleton is not None:
-            poses.append( [ self.classifyPose( skeleton ), skeleton.getSkeletonId() ] )
-            # else:
-            #     poses.append( None )
+        if self.dynModel is None:       # normal mode
+            for skeleton in newSkeletons:
+                poses.append( [ classifyPose( skeleton, self.model ), skeleton.getSkeletonId() ] )
+        else:
+            for skeleton in newSkeletons:   # hybrid mode
+                if skeleton.getPointsDistance( c.distancePoints ) < c.statDynThreshold:
+                    poses.append( [ classifyPose( skeleton, self.model ), skeleton.getSkeletonId() ] )
+                else:
+                    poses.append( [ classifyPose( skeleton, self.dynModel ), skeleton.getSkeletonId() ] )
         return poses
 
-    def proceedHuman( self, human, newSkeletons ):
+    def __proceedHuman( self, human, newSkeletons ):
         sameSkeletonProb = []            # probability, that human is 'i' skeleton
         bb = getBoundingBox( human )
         minDelta = getMinDelta( bb )
@@ -57,10 +61,6 @@ class Frame:
             newSkeletons.append( Skeleton( human, self.lastSkeletonId, bb ) )        # make new skeleton if there is no similar skeleton
             self.lastSkeletonId = self.lastSkeletonId + 1
 
-    # functions classify pose and returns probabilities of poses
-    def classifyPose( self, skeleton ):
-        return self.model.predict( ( cv2.rotate( skeleton.getSkeletonImg(), cv2.ROTATE_90_CLOCKWISE ) ).reshape( -1, c.keypointsNumber, c.framesNumber, 3 ) )
-
     # function takes detected humans keypoints and return skeleton image for each human
     # this is equivalent to proceedFrame, but for creating dataset
     def getSkeletons( self, humans ):
@@ -69,7 +69,7 @@ class Frame:
             return []
         newSkeletons = []
         for human in humans:
-            self.proceedHuman( human, newSkeletons )
+            self.__proceedHuman( human, newSkeletons )
         # self.skeletons = [ s for s in newSkeletons if s is not None ]
         self.skeletons = newSkeletons
         images = []
@@ -86,7 +86,7 @@ class Frame:
             return []
         newSkeletons = []
         for human in humans:
-            self.proceedHuman( human, newSkeletons )
+            self.__proceedHuman( human, newSkeletons )
         self.skeletons = newSkeletons
         keypoints = []
         for skeleton in self.skeletons:
@@ -94,9 +94,16 @@ class Frame:
         return keypoints
 
 
+# functions classify pose and returns probabilities of poses
+def classifyPose( skeleton, model ):
+    return model.predict(
+        ( cv2.rotate( skeleton.getSkeletonImg(), cv2.ROTATE_90_CLOCKWISE ) ).reshape( -1, c.keypointsNumber,
+                                                                                      c.framesNumber, 3 ) )
+
+
 # returns list [ [ maxW, minW ], [ maxH, minH ], [ maxD, minD ] ]
 def getBoundingBox( keypoints ):
-    maxmins = [ [ 0, c.frameWidth ], [ 0, c.frameHeight ], [ 0, c.frameDepth ] ]
+    maxmins = [ [ 0, c.frameWidth ], [ 0, c.frameHeight ], [ 0, 65535 ] ]
     for keypoint in keypoints:
         if keypoint[ 3 ] != 0.0:       # if keypoint detected
             for i in range( 3 ):

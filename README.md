@@ -41,16 +41,21 @@ Both *estimateVideo.py* and *proceedVideo.py* modules works with *.bag* file (an
 
 Usage of above modules is described below. 
 ### Running
-#### estimateVideo.py
+The only module that is needed for viewing stream from camera with estimated poses is run.py. This module is also an example of using this system by developers (it contains examples of getting data).
+
+If you are a developer and you want to use that data some other way, you need to use wrapper and camera modules. Usage of that modules is shown in run.py module (with comments).
+
+#### run.py
 Module loads video and estimates poses for every human in every frame.
 
-Usage: `python proceedVideo.py -v video -m model -w write_name -P -p -g`:
+Usage: `python proceedVideo.py -v video -w write_name -c -p -g -d`:
 * *video* - path to your video relative to running folder or to `/data/videos` folder. If none, program will try to run camera stream.
-* *model* - name of model you want to load relative to `/data/models` folder.
 * *write_name* - name of output video (if you want to save proceeded video).
-* *-P* - preview mode - select this option when you only want to view your video (without estimating skeletons. Useful for viewing *.oni* files.
-* *-p* - proceed mode - select this option when you want estimate poses.
+* *-c* - hybrid/cross - select if you want to use hybrid solution.
+* *-p* - no pose - select this option if you don't want to estimate poses.
 * *-g* - gpu mode - tensorflow will work on GPU. This is not default setting, because OpenPose use a lot of GPU memory, so it cannot run together with tensorflow.
+* *-d* - no depth - select if you don't want to proceed depth information.
+
 
 ### Data processing
 #### Dataset creation pipeline

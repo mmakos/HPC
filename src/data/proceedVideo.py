@@ -275,7 +275,10 @@ if __name__ == '__main__':
                                                ( c.frameWidth, c.frameHeight ) )
 
         if not args.view:
-            frameRGB, skeletonImages, human = proceedFrame()
+            try:
+                frameRGB, skeletonImages, human = proceedFrame()
+            except:
+                break
             if not args.keypoints_mode:
                 proceedSkeletonImages()
             else:
@@ -285,6 +288,8 @@ if __name__ == '__main__':
         display.displayFrameNumber( frameRGB, i )
         t = time()
         cv2.imshow( "Video frame", frameRGB )
+        if i == 0:
+            cv2.imwrite( "../../../photo.png", frameRGB )
         cv2.imshow( "Depth frame", frameD )
         if videoWriter is not None:
             videoWriter.write( frameRGB )

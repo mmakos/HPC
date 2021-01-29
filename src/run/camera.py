@@ -65,7 +65,8 @@ class Camera:
             self.vType = 'reg'
             print( "Opening regular video" )
             self.vid = cv2.VideoCapture( self.videoName )
-            self.framesNumber = int( vid.get( cv2.CAP_PROP_FRAME_COUNT ) )
+            self.framesNumber = int( self.vid.get( cv2.CAP_PROP_FRAME_COUNT ) )
+            self.noDepth = True
         else:
             raise TypeError( "Unsupported video type." )
         print( "Opened." )

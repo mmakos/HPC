@@ -19,7 +19,7 @@ def parseArgs():
     parser.add_argument( "-o", "--output", help="Path to folder with augmented images relative to /data/images." )
     parser.add_argument( "-s", "--small", help="Path to the folder with small images. If none, then small images won't be created." )
     parser.add_argument( "-m", "--mirror", help="Select if you want to mirror poses.", action="store_true" )
-    parser.add_argument( "-r", "--rotate", type=int, help="Select if you want to rotate poses." )
+    parser.add_argument( "-r", "--rotate", type=int, help="How many rotations you want to make." )
     return parser.parse_known_args()[ 0 ]
 
 
