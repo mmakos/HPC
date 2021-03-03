@@ -1,5 +1,17 @@
 # Human Pose Classification - BEng Thesis
-![WEiTI - elka.pw.edu.pl](https://lh3.googleusercontent.com/fife/ABSRlIqJJC3S6Kcy0WmhYjwolt76L3_JZfK_Mn_Yb9h97Uif2ZgtiZZgPDDxUv_45mHQCC49TI-lL4ml8IJR1dY6Xtajf2w0tqbeXdO_tmvoS1luu09V93tY5ayOjWtPc5Cg7UY6MkaMkJro2g0QLELHvnXolwDp1xGHiNKoN4r9d3vwWzwwJX1ftmiN3Q6OqkX046iC0S7tyEVHLc0untMLxFNd6Q__gmsP3FueFFcDGDt-vYuNhNB9knOh4OSQMQOk2xhGQ5_FHUvCtj4r6PocZitQ2qWADQTts8CoCACNwCq2x7PaKSB9Qmp981kG_yjfDafJGlxIEwT3Ktkhov7XuHW8rZBjgxjUFU2eeU7GjyAsocD2m9HSoEkeF_EU_MdyoaHdlaHs8GKxu9XzSlqYl47_LgQxRNGOx14MOwLiFIVD3FsOR4n9FNwrX3tMJ0OQCkto2heHdUFZso8LpmrdSuuRfoWnS0c3STfx8w6T9wgi5hcALVjfhZ8xU4EUWUS-wig-BrZLClS_II01KlyhimbALnNJvp1PncFmB9aAYD5FJD9hKH9TM67a2kRPceX72pPfw1WCd6YzcP-6qccMHZfgijo9R5w0VGHEh0IRP2SPDFIkWwSsIpDyCGyBxK02y_7nDirbohezNs26EYj8O5EQ42Ofkr2kF9X9KOEa8xltuBJq6lIZGhjuxCoXj5NroTBA-kvFyLN28pPBT7bfQa2ayQt_l6fPqQ=w2560-h699-ft)
+![WEiTI - elka.pw.edu.pl](docimages/elka.png)
+
+Please visit also [my website mmakos.pl](http://www.mmakos.pl/programming/hpc).
+
+## Content
+1. [About project](#about-project)
+2. [Architecture](#architecture-basics)
+3. [Requirements](#requirements)
+4. [Usage](#working-with-available-modules)
+   * [Running](#running)
+   * [Data crearting and processing](#data-processing)
+   * [Training](#training)
+   * [Internal modules](#internal-modules)
 
 ## About project
 Created system has to recognize human static and dynamic poses such as standing, walking, running itd.
@@ -7,12 +19,21 @@ As an input it takes video stream of RGBD camera (color and depth stream) from a
 Then, based on classified poses we can monitor human movement and e.g. detect falls.
 
 ## Architecture basics
-Solution is based on body keypoints which are detected using [OpenPose](https://github.com/CMU-Perceptual-Computing-Lab/openpose) library.
+Solution is based on body keypoints which are detected using [OpenPose](https://github.com/CMU-Perceptual-Computing-Lab/openpose) library\
+<img src="docimages/opOutput.png" alt="OpenPose output" height="400px" />\
 System estimates human body's keypoints with OpenPose and converts them into small abstract image which represents theirs positions in 3D space trough multiple frames (so it's in facet 4D space).
 Columns of this image represents sequent frames, rows represents different keypoints and color represent 3D position (B-x, G-y, R-D).
 So example image for 15 keypoints, 32 frame, static pose with RGBD camera looks like:<br>
-<img src="samples/f44s0.png" alt="Example coded keypoints image" width="320"/>
+![Example coded keypoints image](docimages/ephiSample.png)
 <br>Black fields represents not detected keypoints.
+
+### CNN
+I have used a smaller version of VGG net. It has few layers, but pretty similar construction.
+![CNN architecture](docimages/architecture.png)
+
+### Hybrid solution
+The best solution for now is splitting poses to two groups: static and dynamic. Before classification, skeleton is assigned to static or dynamic group and then it's classified by corresponding model. This preclassification is made based on distances between legs. Below, you can see the histogram of this distances for static (blue) and dynamic (orange) poses. As you can see, we can pretty accurately classify pose as static or dynamic using only the sum of distances between legs keypoints through 32 frames.
+![Histogram of legs distance](docimages/legsXYbothHist.png)
 
 ## Requirements
 For now:
