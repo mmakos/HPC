@@ -2,9 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
 
-import consts as c
+import hpc.consts as c
 
-with np.load("../../data/datasets/6filledVal.npz", allow_pickle=True) as data:
+with np.load("data/datasets/6filledVal.npz", allow_pickle=True) as data:
     img = data['images']
     lab = data['labels']
 print("Dataset loaded.")

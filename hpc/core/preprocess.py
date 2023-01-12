@@ -8,7 +8,7 @@ import hpc.consts as c
 def preprocess(keypoints, depthCanal, noDepth=False):
     try:
         getHead(keypoints)
-        keypointsRGBD = mapToRGBD(keypoints, depthCanal, noDepth)
+        keypointsRGBD = mapToRGBD(orderKeypoints(keypoints), depthCanal, noDepth)
         return keypointsRGBD
     except TypeError:
         return []
@@ -42,6 +42,13 @@ def mapToRGBD(keypoints, depthCanal, noDepth=False):
                 estimateDepthZeros(humanRGBD)
             keypointsRGBD.append(humanRGBD)
     return keypointsRGBD
+
+
+def orderKeypoints(humans):
+    ordered = list()
+    for human in humans:
+        ordered.append([human[c.openPoseKeypointsOrder[i]] for i in range(c.keypointsNumber)])
+    return ordered
 
 
 # function estimate depth dimensions for points where depth value was not detected (is 0)

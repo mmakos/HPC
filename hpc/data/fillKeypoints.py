@@ -5,8 +5,7 @@ from tkinter import *
 
 from PIL import Image, ImageTk
 
-sys.path.insert(1, '../func')
-import consts as c
+import hpc.consts as c
 from copy import deepcopy
 
 global img, image
@@ -16,10 +15,10 @@ dragInfo = {'x': 0, 'y': 0, 'p': None, }
 
 parser = argparse.ArgumentParser()
 parser.add_argument("video", help="path to folder with your video relative to /data/videos.")
-parser.add_argument("path", help="path to folder with your .p files relative to /data/images.")
+parser.add_argument("path", help="path to your .p file files relative to /data/images.")
 args = parser.parse_known_args()[0]
-args.path = "../../data/images/" + args.path
-args.video = "../../data/videos/" + args.video + "/"
+args.path = "data/images/" + args.path
+args.video = "data/videos/" + args.video + "/"
 
 
 def readSkels():
@@ -34,6 +33,7 @@ def showImage(reset=False):
     global img, image
     img = ImageTk.PhotoImage(Image.open(args.video + frames[frameNumber]))
     canvas.itemconfig(image, image=img)
+    frameLabel.configure(text=f"Frame {frameNumber}")
     idx = frameNumber - beginFrame
     if idx < 0:
         return True
@@ -42,6 +42,9 @@ def showImage(reset=False):
     else:
         tab = newKeypoints
     allKeypoints = True
+    if len(points) == 0:
+        firstImage()
+        return True
     drawLines(tab[idx])
     for j, kp in enumerate(tab[idx]):
         if kp[3] > 0:
@@ -67,7 +70,7 @@ def drawLines(kps, first=False):
         if first:
             for kj in k:  # for every neighbor of proceeded keypoint
                 if kj not in done:
-                    if ki in [2, 3, 4, 9, 10, 11]:
+                    if ki in [1, 2, 3, 12, 13, 14]:
                         color = "yellow"
                     else:
                         color = "blue"
@@ -161,7 +164,7 @@ def takeFromPrevious():
     showImage()
 
 
-def nextFrame():
+def nextFrame(event=None):
     global frameNumber
     frameNumber = frameNumber + 1
     try:
@@ -183,7 +186,7 @@ def skip():
         return
 
 
-def prevFrame():
+def prevFrame(event=None):
     global frameNumber
     if frameNumber <= 0:
         return
@@ -211,7 +214,9 @@ root = Tk()
 root.title("Keypoints editor")
 
 prevButton = Button(root, text="Previous", command=prevFrame, height=2, width=10)
+root.bind("<Left>", prevFrame)
 nextButton = Button(root, text="Next", command=nextFrame, height=2, width=10)
+root.bind("<Right>", nextFrame)
 resetButton = Button(root, text="Reset", command=resetKeys, height=2, width=10)
 takePrevButton = Button(root, text="Take prev", command=takeFromPrevious, height=2, width=10)
 saveButton = Button(root, text="Save", command=save, height=2, width=10)
@@ -232,6 +237,8 @@ saveButton.grid(row=2, column=4)
 
 infoLabel = Label(root, text="Keypoint", font=("", 12), width=30, anchor="w")
 infoLabel.grid(row=1, column=0)
+frameLabel = Label(root, text="Frame ", font=("", 12), width=30, anchor="w")
+frameLabel.grid(row=2, column=0)
 
 frames = getImagesNames()
 keypoints, beginFrame = readSkels()

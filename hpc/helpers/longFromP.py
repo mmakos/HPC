@@ -1,8 +1,8 @@
 import os
 
-pose = "lie"
+from hpc.consts import poses
 
-for s in range(10, 11):
-    if os.path.isfile(f"../../data/images/rs/{pose}/{pose}{s}at0.p"):
-        os.system(f"python ../data/proceedVideo.py rs/{pose}{s}/ -a rs/{pose}/{pose}{s}at0.p -p rs/{pose} -l")
-        os.rename(f"../../data/images/rs/{pose}/s0.png", f"../../data/images/rs/{pose}/{pose}{s}.png")
+for pose in poses:
+    if os.path.isfile(f"data/images/orbbec_20NOV/apFilled/{pose}at0_f.p"):
+        os.system(f"python hpc/data/proceedVideo.py orbbec_20NOV/{pose}/ -a orbbec_20NOV/apFilled/{pose}at0_f.p -p orbbec_20NOV/apFilled/{pose}")
+        # os.rename(f"data/images/orbbec_20NOV/apFilled/{pose}/s0.png", f"data/images/orbbec_20NOV/apFilled/{pose}/{pose}.png")

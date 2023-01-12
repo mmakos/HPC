@@ -9,7 +9,7 @@ parser.add_argument("path", help="Path to your BGR images folder relative to /da
 parser.add_argument("-o", "--output", help="Path to output folder relative to /data.")
 args = parser.parse_known_args()[0]
 
-path = "../../data/" + args.path
+path = "data/" + args.path
 outPath = ""
 if args.output is None or args.output == args.path:
     print("Files will be overwritten. It can be reverted by running this program again.\nDo you want to overwrite files? y/[n]")
@@ -20,7 +20,7 @@ if args.output is None or args.output == args.path:
         print("Program terminated.")
         exit(0)
 else:
-    outPath = "../../data/" + args.output
+    outPath = "data/" + args.output
 
 if not os.path.isdir(outPath):
     os.mkdir(outPath)

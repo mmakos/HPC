@@ -15,6 +15,7 @@ def parseArgs():
     parser.add_argument("-p", "--no_pose", help="Pose will be estimated.", action="store_true")
     parser.add_argument("-g", "--gpu_mode", help="Pose classification will be executed on GPU, but GPU can be out of memory", action="store_true")
     parser.add_argument("-d", "--no_depth", help="Depth canal will be excluded.", action="store_true")
+    parser.add_argument("-l", "--estimation_library", help="Library for pose estimation, AlphaPose or OpenPose.", action="store_true", default="AlphaPose")
     return parser.parse_known_args()
 
 
@@ -39,7 +40,7 @@ if __name__ == "__main__":
     # if you want to load one model, just give a name of this model
     # if you want to load two models (static and dynamic for hybrid solution) give a tuple with names of models
     wrapper = Wrapper(model=("Static", "Dynamic") if args.hybrid else "Static",
-                      gpuMode=args.gpu_mode, addParams=allArgs[1])
+                      gpuMode=args.gpu_mode, estimationLibrary=args.estimation_library, addParams=allArgs[1])
 
     firstFrame = True
     while True:

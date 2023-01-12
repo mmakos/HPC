@@ -10,7 +10,7 @@ from primesense import _openni2 as c_api
 from primesense import openni2
 
 sys.path.insert(1, '../func')
-import display
+import hpc.core.display as display
 
 
 def getArgs():

@@ -19,7 +19,6 @@ class PoseEstimation:
             pose = self.apWrapper.process("unnamed", frameRGB)
             return self.apWrapper.vis(frameRGB, pose), self.__alphaPoseKeypoints(pose)
 
-
     def __alphaPoseKeypoints(self, pose):
         skeletons = pose["result"]
         humansKeypoints = []
@@ -29,10 +28,10 @@ class PoseEstimation:
             kpScores = skeleton["kp_score"].tolist()
             for i, _ in enumerate(keypoints):
                 keypoints[i].append(kpScores[i][0])
-            humansKeypoints.append(self.__alphaPoseKeypointsOrder(keypoints))
+            humansKeypoints.append(self.__alphaPoseToOpenPoseKeypointsOrder(keypoints))
         return humansKeypoints
 
-    def __alphaPoseKeypointsOrder(self, keypoints: list):
+    def __alphaPoseToOpenPoseKeypointsOrder(self, keypoints: list):
         keypointsOredered = [keypoints[i] for i in (0, 6, 8, 10, 5, 7, 9, 12, 14, 16, 11, 13, 15, 2, 1, 4, 3)]
         keypointsOredered.insert(1, self.__interpolatePoints(keypoints[5], keypoints[6]))
         keypointsOredered.insert(8, self.__interpolatePoints(keypoints[11], keypoints[12]))

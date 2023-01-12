@@ -49,9 +49,22 @@ class Skeleton:
                     if begin == -1:
                         begin = i
                 elif begin >= 0:
-                    ranges.append([begin, i])
-        pass
+                    ranges.append((begin, i))
+                    begin = -1
+            if begin > 0:
+                ranges.append((begin, c.framesNumber))
 
+            for r in ranges:
+                for i in range(r[0], r[1]):
+                    if r[0] == 0:
+                        self.skeletonImg[i, kp] = self.skeletonImg[r[1], kp]
+                        self.keypointsScore[i, kp] = -1
+                    elif r[1] == c.framesNumber:
+                        self.skeletonImg[i, kp] = self.skeletonImg[r[0] - 1, kp]
+                        self.keypointsScore[i, kp] = -1
+                    else:
+                        self.skeletonImg[i, kp] = self.skeletonImg[r[0] - 1, kp] + (self.skeletonImg[r[1], kp] - self.skeletonImg[r[0] - 1, kp]) * (i - r[0] + 1) / (r[1] - r[0] + 1)
+                        self.keypointsScore[i, kp] = 1
 
     def __updateImg(self):
         # all columns (frames) need to be swap left

@@ -7,16 +7,11 @@ from time import time
 import cv2
 import numpy as np
 
-sys.path.insert(1, '../func')
-import display
-import consts as c
-from frame import Frame
-from preprocess import preprocess
-
-dir_path = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(dir_path + '/../../externals/openpose/build/python/openpose/Release')
-os.environ['PATH'] = os.environ['PATH'] + ';' + dir_path + '/../../externals/openpose/build/x64/Release;' + dir_path + '/../../externals/openpose/build/bin;'
-import pyopenpose as op
+import hpc.core.display as display
+import hpc.consts as c
+from hpc.core.frame import Frame
+from hpc.core.pose_estimation import PoseEstimation
+from hpc.core.preprocess import preprocess
 
 
 def parseArgs():
@@ -28,36 +23,8 @@ def parseArgs():
     parser.add_argument("-l", "--long", help="Skeletons will be saved as one long image instead of multiple small images.", action="store_true")
     parser.add_argument("-k", "--keypoints_mode", help="Saves pure keypoints into text file in folder given into --proceed.", action="store_true")
     parser.add_argument("-a", "--annotations", help="Loads file with skeleton annotations and creates images based on those.")
+    parser.add_argument("-e", "--estimation_library", help="Library for pose estimation, AlphaPose or OpenPose.", default="AlphaPose")
     return parser.parse_known_args()
-
-
-def getOpenPoseArgs(params):
-    for param in range(0, len(allArgs[1])):
-        curr_item = allArgs[1][param]
-        if param != len(allArgs[1]) - 1:
-            next_item = allArgs[1][param + 1]
-        else:
-            next_item = "1"
-        if "--" in curr_item and "--" in next_item:
-            key = curr_item.replace('-', '')
-            if key not in params:
-                params[key] = "1"
-        elif "--" in curr_item and "--" not in next_item:
-            key = curr_item.replace('-', '')
-            if key not in params:
-                params[key] = next_item
-
-
-def initOpenPose():
-    # starting OpenPose
-    params = dict()
-    params["model_folder"] = "../../externals/openpose/models/"
-    params["render_threshold"] = c.keypointThreshold
-    getOpenPoseArgs(params)
-    wrapper = op.WrapperPython()
-    wrapper.configure(params)
-    wrapper.start()
-    return wrapper
 
 
 def initFrameDimensions():
@@ -96,7 +63,7 @@ def getStreams():
         vType = 'img'
         print("Video from images.")
         vid = sorted(os.listdir(args.video))  # vid is array of file names
-        framesNumber = len(vid)
+        framesNumber = len(vid) / 2
         colorStream = 0
         depthStream = 1
     # Regular video
@@ -142,24 +109,20 @@ def getFrame():
 
 def getAnnotations():
     ans = []
-    frames = pickle.load(open("../../data/images/" + args.annotations, "rb"))
+    frames = pickle.load(open("data/images/" + args.annotations, "rb"))
     for f in frames:
         ans.append([[a[0], a[1], a[3]] for a in f])
     return ans
 
 
 def proceedFrame():
-    if not args.annotations:
-        datum = op.Datum()
-        datum.cvInputData = frameRGB
-        opWrapper.emplaceAndPop([datum])
+    global poseEstimation
 
-        # array of people with keypoints is in datum.poseKeypoints
-        # getSkeletons gives for every human skeleton image
-        image = datum.cvOutputData  # image is frame with drawn skeleton
+    if not args.annotations:
+        image, keypoints = poseEstimation.estimatePose(frameRGB)
 
         # map to RGBD
-        rgbdKeypoints = preprocess(datum.poseKeypoints, frameD)
+        rgbdKeypoints = preprocess(keypoints, frameD)
     else:
         image = frameRGB
         idx = i - beginFrame
@@ -228,21 +191,22 @@ def proceedSkeletonKeypoints(end=False):
 
 
 if __name__ == '__main__':
+    global poseEstimation
     allArgs = parseArgs()
     args = allArgs[0]
     videoWriter = None
     outputVidPath = None
     dataPath = None
     if args.proceed:
-        dataPath = f"../../data/images/{args.proceed}"
+        dataPath = f"data/images/{args.proceed}"
         try:
             os.mkdir(dataPath)
         except:
             pass
 
-    args.video = "../../data/videos/" + args.video
+    args.video = "data/videos/" + args.video
     if not os.path.isfile(args.video) and not os.path.isdir(args.video):
-        print("No video found. Please make sure you typed correct path to your video.")
+        print(f"No video found at path {args.video}. Please make sure you typed correct path to your video.")
         exit()
 
     if args.annotations is not None:
@@ -254,7 +218,8 @@ if __name__ == '__main__':
     print(framesNumber, "frames to proceed.")
     # initialise openPose and Frame class
     if not args.view:
-        opWrapper = initOpenPose()
+        if not args.annotations:
+            poseEstimation = PoseEstimation(args.estimation_library, allArgs[1])
         frame = Frame()
 
     skels = []
@@ -282,6 +247,7 @@ if __name__ == '__main__':
                 break
             if not args.keypoints_mode:
                 proceedSkeletonImages()
+                pass
             else:
                 proceedSkeletonKeypoints()
 
@@ -289,8 +255,6 @@ if __name__ == '__main__':
         display.displayFrameNumber(frameRGB, i)
         t = time()
         cv2.imshow("Video frame", frameRGB)
-        if i == 0:
-            cv2.imwrite("../../../photo.png", frameRGB)
         cv2.imshow("Depth frame", frameD)
         if videoWriter is not None:
             videoWriter.write(frameRGB)

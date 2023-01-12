@@ -12,7 +12,7 @@ parser.add_argument("-p", "--poses", default="poses", help="Path to folder with 
 parser.add_argument("-z", "--zipped", help="File will be compressed to .zip file.", action="store_true")
 args = parser.parse_known_args()[0]
 
-path = "../../data/" + args.poses
+path = "data/" + args.poses
 
 dataset = []
 label = 0
@@ -28,7 +28,7 @@ for _, poses, _ in os.walk(path):
                 dataset.append([np.array(img), label])
 
 shuffle(dataset)
-dsPath = "../../data/datasets/" + args.dataset_name
+dsPath = "data/datasets/" + args.dataset_name
 np.save(dsPath, dataset)
 if not args.zipped:
     print("\nDataset created and saved to file /data/datasets/" + args.dataset_name + ".npy")

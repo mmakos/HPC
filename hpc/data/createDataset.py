@@ -1,14 +1,12 @@
 import argparse
 import os
-import sys
 
 import cv2
 import numpy as np
 from sklearn.utils import shuffle
 from tqdm import tqdm
 
-sys.path.insert(1, '../func')
-import consts as c
+import hpc.consts as c
 from random import randint
 
 parser = argparse.ArgumentParser()
@@ -17,10 +15,10 @@ parser.add_argument("-d", "--dataset_name", help="Path to output dataset file re
 parser.add_argument("-a", "--amount", type=int, help="amount of samples in each label (same).")
 args = parser.parse_known_args()[0]
 
-path = "../../data/images/" + args.poses
+path = "data/images/" + args.poses
 if args.dataset_name is None:
     args.dataset_name = args.poses
-dsPath = "../../data/datasets/" + args.dataset_name
+dsPath = "data/datasets/" + args.dataset_name
 
 datasetImages = []
 datasetLabels = []
@@ -47,4 +45,4 @@ datasetImages = np.array(datasetImages)
 datasetLabels = np.array(datasetLabels)
 datasetImages, datasetLabels = shuffle(datasetImages, datasetLabels)
 np.savez_compressed(dsPath, images=datasetImages, labels=datasetLabels)
-print("\nDataset created and saved to file /data/datasets/" + args.dataset_name + ".npz")
+print("\nDataset created and saved to file data/datasets/" + args.dataset_name + ".npz")

@@ -9,8 +9,8 @@ keypointsNumber = 15
 # keypoints detection
 keypointThreshold = 0.1  # below this threshold, keypoints from openPose are not considered
 minDetectedKeypoints = 8  # minimum amount of detected keypoints for classifying pose
-interpolateNotDetected = True  # Interpolates not detected keypoints with previous and following frame
-fillNotDetected = True  # fills not detected keypoints with several algorithms (gives better accuracy)
+interpolateNotDetected = False  # Interpolates not detected keypoints with previous and following frame
+fillNotDetected = False  # fills not detected keypoints with several algorithms (gives better accuracy)
 
 # tracking
 maxDeltaCoefficient = 0.5  # F
@@ -51,44 +51,45 @@ poses = (
     "lean",
     "kneel",
     "walk",
-    "run",
     "jump",
-    "dance",
 )
 
 # used for estimation depth of not detected keypoints on depth canal
 connections = (
-    [1],
-    (0, 2, 5, 8),
+    [4],
+    [2],
     (1, 3),
     (2, 4),
-    [3],
-    (1, 6),
+    (0, 3, 5, 11),
+    (4, 6),
     (5, 7),
     [6],
-    (1, 9, 12),
+    [9],
     (8, 10),
     (9, 11),
-    [10],
-    (8, 13),
+    (10, 12, 4),
+    (11, 13),
     (12, 14),
     [13]
 )
 
 keypoints = (
     "Nose",
+    "Left wrist",
+    "Left elbow",
+    "Left shoulder",
     "Neck",
     "Right shoulder",
     "Right elbow",
     "Right wrist",
-    "Left shoulder",
-    "Left elbow",
-    "Left wrist",
-    "Middle hip",
-    "Right hip",
-    "Right knee",
     "Right ankle",
+    "Right knee",
+    "Right hip",
+    "Middle hip",
     "Left hip",
     "Left knee",
     "Left ankle",
 )
+
+# Keypoints order mapping from openpose format to my
+openPoseKeypointsOrder = (0, 7, 6, 5, 1, 2, 3, 4, 11, 10, 9, 8, 12, 13, 14)

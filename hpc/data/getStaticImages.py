@@ -3,7 +3,7 @@ import argparse
 import cv2
 import numpy as np
 
-import consts as c
+import hpc.consts as c
 
 # Module loads images with encoded keypoints, takes one row, and stretch it to fill whole image (for static poses)
 
@@ -12,7 +12,7 @@ parser.add_argument("image", help="Name of your image.")
 parser.add_argument("-f", "--frames", type=int, default=1, help="How many frames to take from image.")
 args = parser.parse_known_args()[0]
 
-args.image = "../../data/images/" + args.image
+args.image = "data/images/" + args.image
 image = cv2.imread(args.image)
 for i in range(args.frames):
     outImg = np.zeros((image.shape[0], c.framesNumber, 3))

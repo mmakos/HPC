@@ -16,7 +16,7 @@ parser.add_argument("-o", "--output", help="Path to folder where you want to sav
 parser.add_argument("-z", "--no_z", help="Z dimension will not be proceeded.", action="store_true")
 args = parser.parse_known_args()[0]
 
-inputPath = "../../data/images/" + args.input + "/"
+inputPath = "data/images/" + args.input + "/"
 
 images = natsorted(os.listdir(inputPath))
 maxFrame = int(images[-1].split('s')[0].strip('f'))
@@ -41,7 +41,7 @@ for img in skelImgs:
 
 if args.output is None:
     args.output = args.input + "_long"
-savePath = "../../data/images/" + args.output + "/"
+savePath = "data/images/" + args.output + "/"
 if not os.path.isdir(savePath):
     os.mkdir(savePath)
 for i, img in enumerate(skelImgs):
