@@ -14,6 +14,7 @@ def getArgs():
     parser.add_argument("-v", "--video", default=datetime.now().strftime("%Y%m%d%H%M%S"), help="Path to recorded video relative to /data/video.")
     parser.add_argument("-c", "--color_preview", action="store_true")
     parser.add_argument("-d", "--depth_preview", action="store_true")
+    parser.add_argument("-f", "--show_frame", action="store_true")
     return parser.parse_known_args()[0]
 
 
@@ -67,7 +68,8 @@ def recordRs():
 
         dt_string = datetime.now().strftime("%d%m%Y_%H%M%S%f")
         if args.color_preview:
-            display.displaySmallFrameNumber(frameColor, i)
+            if args.show_frame:
+                display.displaySmallFrameNumber(frameColor, i)
             cv2.imshow("Color frame", frameColor)
         if args.depth_preview:
             cv2.imshow("Depth frame", frameDepth)
