@@ -5,10 +5,10 @@ import numpy as np
 import hpc.consts as c
 
 
-def preprocess(keypoints, depthCanal, noDepth=False):
+def preprocess(keypoints, depthCanal, noDepth=False, order=True):
     try:
         getHead(keypoints)
-        keypointsRGBD = mapToRGBD(orderKeypoints(keypoints), depthCanal, noDepth)
+        keypointsRGBD = mapToRGBD(orderKeypoints(keypoints) if order else keypoints, depthCanal, noDepth)
         return keypointsRGBD
     except TypeError:
         return []

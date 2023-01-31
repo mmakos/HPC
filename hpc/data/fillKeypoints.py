@@ -70,7 +70,7 @@ def drawLines(kps, first=False):
         if first:
             for kj in k:  # for every neighbor of proceeded keypoint
                 if kj not in done:
-                    if ki in [1, 2, 3, 12, 13, 14]:
+                    if ki in [0, 1, 2, 12, 13, 14]:
                         color = "yellow"
                     else:
                         color = "blue"
@@ -92,11 +92,11 @@ def reverse():
         return
     kps = newKeypoints[idx]
     kps[2], kps[5] = kps[5], kps[2]
-    kps[3], kps[6] = kps[6], kps[3]
-    kps[4], kps[7] = kps[7], kps[4]
-    kps[9], kps[12] = kps[12], kps[9]
-    kps[10], kps[13] = kps[13], kps[10]
-    kps[11], kps[14] = kps[14], kps[11]
+    kps[1], kps[6] = kps[6], kps[1]
+    kps[0], kps[7] = kps[7], kps[0]
+    kps[10], kps[12] = kps[12], kps[10]
+    kps[9], kps[13] = kps[13], kps[9]
+    kps[8], kps[14] = kps[14], kps[8]
     showImage()
 
 

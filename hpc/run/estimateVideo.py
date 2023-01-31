@@ -10,15 +10,14 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 print("Loading tensorflow...")
 import tensorflow as tf
 
-sys.path.insert(1, '../func')
 import display
 import consts as c
 from frame import Frame
 from preprocess import mapToRGBD
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(dir_path + '/../../externals/openpose/build/python/openpose/Release')
-os.environ['PATH'] = os.environ['PATH'] + ';' + dir_path + '/../../externals/openpose/build/x64/Release;' + dir_path + '/../../externals/openpose/build/bin;'
+sys.path.append(dir_path + '/externals/openpose/build/python/openpose/Release')
+os.environ['PATH'] = os.environ['PATH'] + ';' + dir_path + '/externals/openpose/build/x64/Release;' + dir_path + '/../../externals/openpose/build/bin;'
 import pyopenpose as op
 
 
@@ -54,7 +53,7 @@ def getOpenPoseArgs(params):
 def initOpenPose():
     # starting OpenPose
     params = dict()
-    params["model_folder"] = "../../externals/openpose/models/"
+    params["model_folder"] = "externals/openpose/models/"
     params["render_threshold"] = c.keypointThreshold
     getOpenPoseArgs(params)
     wrapper = op.WrapperPython()
@@ -84,7 +83,7 @@ def getModel():
             # Invalid device or cannot modify virtual devices once initialized.
             pass
     print("Getting model...")
-    mod = tf.keras.models.load_model('../../data/models/' + args.model)
+    mod = tf.keras.models.load_model('data/models/' + args.model)
     print("Model " + args.model + " loaded.")
     print(mod.summary())
     return mod
@@ -201,13 +200,13 @@ if __name__ == '__main__':
     dataPath = out = None
 
     if args.video is not None:
-        args.video = "../../data/videos/" + args.video
+        args.video = "data/videos/" + args.video
         if not os.path.isfile(args.video) and not os.path.isdir(args.video):
             print("No video found. Please make sure you typed correct path to your video.")
             exit()
 
     if args.write_name is not None:
-        args.write_name = "../../data/videos/" + args.write_name + ".mp4"
+        args.write_name = "data/videos/" + args.write_name + ".mp4"
 
     global vType, colorStream, depthStream, vid, framesNumber
     getStreams()

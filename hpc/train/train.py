@@ -1,14 +1,11 @@
 import argparse
-import sys
 
+import hpc.consts as c
+import hpc.core.model as model
 import numpy as np
 # os.environ[ 'TF_CPP_MIN_LOG_LEVEL' ] = '3'
 import tensorflow as tf
 from matplotlib import pyplot as plt
-
-sys.path.insert(1, '../func')
-import model
-import consts as c
 
 
 def parseArgs():
@@ -21,17 +18,8 @@ def parseArgs():
     return parser.parse_known_args()[0]
 
 
-def changeKeyOrder(img):
-    order = (0, 2, 1, 5, 3, 6, 4, 7, 9, 8, 12, 10, 13, 11, 14)
-    for j, i in enumerate(img):
-        im = np.zeros(shape=np.shape(i))
-        for k, o in enumerate(order):
-            im[k] = i[o]
-        img[j] = im
-
-
 def readDataset(dsName):
-    with np.load("../../data/datasets/" + dsName, allow_pickle=True) as data:
+    with np.load("data/datasets/" + dsName, allow_pickle=True) as data:
         img = data['images']
         lab = data['labels']
     print("Dataset loaded.")
@@ -49,7 +37,7 @@ def shuffleAndSplit(ds, datasetSize, trainSizeFactor):
 
 def getModel():
     try:
-        mod = tf.keras.models.load_model('../../data/models/' + args.model_name)
+        mod = tf.keras.models.load_model('data/models/' + args.model_name)
         print("Model " + args.model_name + " loaded.")
     except Exception:
         print("Creating new model.")
@@ -61,7 +49,7 @@ def getModel():
 
 def saveModel():
     if args.output_model is not None:
-        m.save('../../data/models/' + args.output_model)
+        m.save('data/models/' + args.output_model)
         print("Model saved to /data/models/" + args.output_model)
     else:
         print("Model not saved.")
@@ -76,7 +64,7 @@ def showPlots(hist, save=None):
     plt.xlabel('epoch')
     plt.legend(['train', 'val'], loc='upper left')
     if save is not None:
-        plt.savefig(f"../../../thesis/figures/dynamic{save}Acc{c.epochs}.png")
+        plt.savefig(f"../thesis/figuresTemp/{args.output_model}{save}Acc{c.epochs}.png")
     plt.clf()
     # loss = plt.figure( 1 )
     plt.plot(hist['loss'])
@@ -86,7 +74,7 @@ def showPlots(hist, save=None):
     plt.xlabel('epoch')
     plt.legend(['train', 'val'], loc='upper left')
     if save is not None:
-        plt.savefig(f"../../../thesis/figuresTemp/dynamic{save}Loss{c.epochs}.png")
+        plt.savefig(f"../thesis/figuresTemp/{args.output_model}{save}Loss{c.epochs}.png")
     plt.clf()
     # plt.show()
 
@@ -108,13 +96,14 @@ if __name__ == '__main__':
     train = train.batch(c.batchSize)
     validation = validation.batch(c.batchSize)
 
-    bestAcc = 0.0
+    bestAcc = 0
     number = 0
+    output_model = args.output_model + "0"
     while True:
-        args.output_model = args.output_model[:-1] + str(number)
+        output_model = output_model[:-1] + str(number)
         m = getModel()
         mc = tf.keras.callbacks.ModelCheckpoint(
-            filepath='../../data/models/' + args.output_model,
+            filepath='data/models/' + output_model,
             save_weights_only=False,
             monitor='val_accuracy',
             mode='max',
@@ -127,7 +116,7 @@ if __name__ == '__main__':
         if acc > bestAcc:
             bestAcc = acc
             showPlots(history.history, number)
-            file = open("../../info2.txt", "a")
-            file.write(f"\n{args.output_model}, accuracy = {acc}, loss = {loss}, batch size = {c.batchSize}, after epoch {idx + 1}")
+            file = open("info2.txt", "a")
+            file.write(f"\n{output_model}, accuracy = {acc}, loss = {loss}, batch size = {c.batchSize}, after epoch {idx + 1}")
             file.close()
             number = (number + 1) % 2

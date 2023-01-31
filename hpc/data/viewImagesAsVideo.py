@@ -14,7 +14,7 @@ parser.add_argument("-z", "--zoom", type=int, default=8, help="Factor you want t
 args = parser.parse_known_args()[0]
 
 if not os.path.isdir(args.images_folder):
-    args.images_folder = "../../data/images/" + args.images_folder
+    args.images_folder = "data/images/" + args.images_folder
     if not os.path.isdir(args.images_folder):
         print("No such folder. Please make sure you typed correct directory path.")
         exit()

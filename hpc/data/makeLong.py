@@ -3,7 +3,6 @@ from time import sleep
 
 import cv2
 
-sys.path.insert(1, '../func')
 import os
 import argparse
 from tqdm import tqdm

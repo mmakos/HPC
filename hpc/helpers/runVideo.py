@@ -27,7 +27,7 @@ def putTextOnImg(img):
 
 # starting OpenPose
 params = dict()
-params["model_folder"] = "../../../externals/openpose/models/"
+params["model_folder"] = "externals/openpose/models/"
 opWrapper = op.WrapperPython()
 opWrapper.configure(params)
 opWrapper.start()

@@ -6,10 +6,6 @@ from datetime import datetime
 import cv2
 import keyboard
 import numpy as np
-from primesense import _openni2 as c_api
-from primesense import openni2
-
-sys.path.insert(1, '../func')
 import hpc.core.display as display
 
 
@@ -89,14 +85,16 @@ def recordRs():
 
 if __name__ == '__main__':
     args = getArgs()
-    path = "../../data/videos/" + args.video
+    path = "data/videos/" + args.video
     try:
         print("Trying to open Openni device...")
+        from primesense import _openni2 as c_api
+        from primesense import openni2
         if sys.platform == "win32":
             openni2.initialize(
-                "../../externals/OpenNI/Windows/Astra OpenNI2 Development Instruction(x64)_V1.3/OpenNI2/OpenNI-Windows-x64-2.3.0.63/Redist")
+                "externals/OpenNI/Windows/Astra OpenNI2 Development Instruction(x64)_V1.3/OpenNI2/OpenNI-Windows-x64-2.3.0.63/Redist")
         else:
-            openni2.initialize("../../OpenNI/Linux/OpenNI-Linux-x64-2.3.0.63/Redist")
+            openni2.initialize("OpenNI/Linux/OpenNI-Linux-x64-2.3.0.63/Redist")
         dev = openni2.Device.open_any()
         print("Openni device opened.")
         recordOni()

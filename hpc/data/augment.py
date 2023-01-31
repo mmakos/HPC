@@ -2,7 +2,6 @@ import sys
 
 import cv2
 
-sys.path.insert(1, '../func')
 import hpc.consts as c
 import os
 import argparse
@@ -67,14 +66,14 @@ def rotate(im, angleOX, angleOY):
 
 if __name__ == "__main__":
     args = parseArgs()
-    inputPath = "../../data/images/" + args.input + "/"
+    inputPath = "data/images/" + args.input + "/"
     if not args.output:
         args.output = args.input + "_aug"
-    outputPath = "../../data/images/" + args.output + "/"
+    outputPath = "data/images/" + args.output + "/"
     if not os.path.isdir(outputPath) and (args.mirror or args.rotate):
         os.mkdir(outputPath)
     if args.small is not None:
-        smallPath = "../../data/images/" + args.small + "/"
+        smallPath = "data/images/" + args.small + "/"
         if not os.path.isdir(smallPath):
             os.mkdir(smallPath)
 

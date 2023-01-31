@@ -14,7 +14,7 @@ class PoseEstimation:
             datum = op.Datum()
             datum.cvInputData = frameRGB
             self.opWrapper.emplaceAndPop([datum])
-            return frameRGB, datum.poseKeypoints
+            return datum.cvOutputData, datum.poseKeypoints
         else:
             pose = self.apWrapper.process("unnamed", frameRGB)
             return self.apWrapper.vis(frameRGB, pose), self.__alphaPoseKeypoints(pose)
@@ -44,8 +44,8 @@ class PoseEstimation:
         self.estimationLibrary = estimationLibrary
         if estimationLibrary == "OpenPose":
             dir_path = os.path.dirname(os.path.realpath(__file__))
-            sys.path.append(dir_path + '/../../externals/openpose/build/python/openpose/Release')
-            os.environ['PATH'] = os.environ['PATH'] + ';' + dir_path + '/../../externals/openpose/build/x64/Release;' + dir_path + '/../../externals/openpose/build/bin;'
+            sys.path.append(dir_path + 'externals/openpose/build/python/openpose/Release')
+            os.environ['PATH'] = os.environ['PATH'] + ';' + dir_path + 'externals/openpose/build/x64/Release;' + dir_path + '/externals/openpose/build/bin;'
             self.__initOpenPose(self.__getOpParams(addParams))
         else:
             from hpc.run.alpha_pose_api import SingleImageAlphaPose
@@ -57,7 +57,7 @@ class PoseEstimation:
         # starting OpenPose
         if not opParams:
             opParams = dict()
-        opParams["model_folder"] = "../../externals/openpose/models/"
+        opParams["model_folder"] = "externals/openpose/models/"
         opParams["render_threshold"] = c.keypointThreshold
         import pyopenpose as op
         self.opWrapper = op.WrapperPython()

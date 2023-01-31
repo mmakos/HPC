@@ -6,7 +6,6 @@ from math import sqrt
 import numpy as np
 
 import hpc.consts as c
-from hpc.core.preprocess import detected
 
 
 class Skeleton:
@@ -63,7 +62,9 @@ class Skeleton:
                         self.skeletonImg[i, kp] = self.skeletonImg[r[0] - 1, kp]
                         self.keypointsScore[i, kp] = -1
                     else:
-                        self.skeletonImg[i, kp] = self.skeletonImg[r[0] - 1, kp] + (self.skeletonImg[r[1], kp] - self.skeletonImg[r[0] - 1, kp]) * (i - r[0] + 1) / (r[1] - r[0] + 1)
+                        self.skeletonImg[i, kp] = self.skeletonImg[r[0] - 1, kp] + (
+                                self.skeletonImg[r[1], kp] - self.skeletonImg[r[0] - 1, kp]) * (i - r[0] + 1) / (
+                                                          r[1] - r[0] + 1)
                         self.keypointsScore[i, kp] = 1
 
     def __updateImg(self):
@@ -89,12 +90,12 @@ class Skeleton:
         return np.mean(sab)
 
     # function returns sum of distances of particular point between all frames
-    def getPointsDistance(self, points=(9, 10, 11, 12, 13, 14)):
+    def getPointsDistance(self, points=c.distancePoints):
         moveSum = np.zeros(shape=3)
         for k in points:
             for f in range(1, 32):
-                moveSum = np.add(moveSum, np.fabs(np.subtract(self.skeletonImg[k, f], self.skeletonImg[k, f - 1])))
-        return moveSum[0] * c.xDistCoefficient + moveSum[1] * c.yDistCoefficient
+                moveSum = np.add(moveSum, np.fabs(np.subtract(self.skeletonImg[f, k], self.skeletonImg[f - 1, k])))
+        return (moveSum[0] * c.xDistCoefficient + moveSum[1] * c.yDistCoefficient) * 255
 
     def getSkeletonImg(self):
         return self.skeletonImg
@@ -107,20 +108,36 @@ class Skeleton:
 
 
 def normalize(keypoints, boundingBox):
-    bbDims = [boundingBox[0][0] - boundingBox[0][1],
-              boundingBox[1][0] - boundingBox[1][1],
-              boundingBox[2][0] - boundingBox[2][1]]
+    if c.squareNormalization:
+        return normalizeToSquare(keypoints, boundingBox)
+    else:
+        return normalizeToRectangle(keypoints, boundingBox)
 
-    try:
-        return [[(i[0] - boundingBox[0][1]) / bbDims[0],
-                 (i[1] - boundingBox[1][1]) / bbDims[1],
-                 (i[2] - boundingBox[2][1]) / bbDims[2]]
-                for i in keypoints]
-    except ZeroDivisionError:
-        return [[(i[0] - boundingBox[0][1]) / (bbDims[0] + 1),
-                 (i[1] - boundingBox[1][1]) / (bbDims[1] + 1),
-                 (i[2] - boundingBox[2][1]) / (bbDims[2] + 1)]
-                for i in keypoints]
+
+def normalizeToRectangle(keypoints, boundingBox):
+    bbDims = [max(boundingBox[0][0] - boundingBox[0][1], 1),
+              max(boundingBox[1][0] - boundingBox[1][1], 1),
+              max(boundingBox[2][0] - boundingBox[2][1], 1)]
+
+    return [[(i[0] - boundingBox[0][1]) / bbDims[0],
+             (i[1] - boundingBox[1][1]) / bbDims[1],
+             (i[2] - boundingBox[2][1]) / bbDims[2]]
+            for i in keypoints]
+
+
+def normalizeToSquare(keypoints, boundingBox):
+    bbDims = [max(boundingBox[0][0] - boundingBox[0][1], 1),
+              max(boundingBox[1][0] - boundingBox[1][1], 1),
+              max(boundingBox[2][0] - boundingBox[2][1], 1)]
+
+    squareDim = max(bbDims[0], bbDims[1])
+    squareBoundingBoxUpperLeft = [boundingBox[0][1] - (squareDim - bbDims[0]) / 2,
+                                  boundingBox[1][1] - (squareDim - bbDims[1]) / 2]
+
+    return [[(i[0] - squareBoundingBoxUpperLeft[0]) / squareDim,
+             (i[1] - squareBoundingBoxUpperLeft[1]) / squareDim,
+             (i[2] - boundingBox[2][1]) / bbDims[2]]
+            for i in keypoints]
 
 
 # function estimates not detected keypoints in rgbd space by symmetry
@@ -134,33 +151,37 @@ def mirrorNotDetectedKeypoints(human):
     headA = 0.5  # distance between head and neck will be a times distance between neck and hips
     # head
     if not detectedOrInterpolated(human[0]):
-        human[0] = pointSym(human, x=8, o=1, a=headA)
+        human[0] = pointSym(human, x=11, o=4, a=headA)
+
     # shoulders and hips
     # if one shoulder (or hip) is detected and second is not
     # then second will be inverted through a middle point (neck/middle hip)
-    for i in (2, 5, 1), (5, 2, 1), (9, 12, 8), (12, 9, 8):
+    for i in (c.leftShoulder, c.rightShoulder, c.neck), (c.leftShoulder, c.rightShoulder, c.neck), \
+            (c.leftHip, c.rightHip, c.middleHip), (c.rightHip, c.leftHip, c.middleHip):
+
         if not detectedOrInterpolated(human[i[0]]) and detectedOrInterpolated(human[i[1]]):
             human[i[0]] = pointSym(human, x=i[1], o=i[2], a=1)
+
     # arms and legs
     # tuple is like: ( not detected kp, detected kp, parent of not detected, parent of detected )
     # parents ar shoulders for arms and hips for legs
-    for i in (3, 6, 2, 5), (4, 7, 2, 5), (6, 3, 5, 2), (7, 4, 5, 2), \
-             (13, 10, 12, 9), (14, 11, 12, 9), (10, 13, 9, 12), (11, 14, 9, 12):
+    for i in [(c.leftElbow, c.rightElbow, c.leftShoulder, c.rightShoulder),
+              (c.leftWrist, c.rightWrist, c.leftElbow, c.rightElbow),
+              (c.rightElbow, c.leftElbow, c.rightShoulder, c.leftShoulder),
+              (c.rightWrist, c.leftWrist, c.rightElbow, c.leftElbow),
+              (c.rightKnee, c.leftKnee, c.rightHip, c.leftHip),
+              (c.rightAnkle, c.leftAnkle, c.rightKnee, c.leftKnee),
+              (c.leftKnee, c.rightKnee, c.leftHip, c.rightHip),
+              (c.leftAnkle, c.rightAnkle, c.leftKnee, c.rightKnee)]:
         if not detectedOrInterpolated(human[i[0]]) and detectedOrInterpolated(human[i[1]]):
             diff = [human[i[3]][j] - human[i[2]][j] for j in range(3)]
             human[i[0]] = [human[i[1]][j] - diff[j] for j in range(3)] + [1.0]
 
 
 def parentizeNotDetectedKeypoints(human):
-    for kp in 2, 5, 9, 12, 3, 6, 4, 7, 10, 13, 11, 14:
-        if not detectedOrInterpolated(human[kp]):
-            if kp == 5:
-                parent = 1
-            elif kp == 12:
-                parent = 8
-            else:
-                parent = kp - 1
-            human[kp] = human[parent]
+    for i, parent in enumerate(c.keypointsParents):
+        if not detectedOrInterpolated(human[i]) and parent >= 0:
+            human[i] = human[parent]
 
 
 # x - index of point to reflect

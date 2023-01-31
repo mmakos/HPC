@@ -6,7 +6,7 @@ import seaborn as sns
 import sklearn.metrics as metrics
 import tensorflow as tf
 
-import consts as c
+import hpc.consts as c
 
 
 def getArgs():
@@ -18,7 +18,7 @@ def getArgs():
 
 
 def readDataset(dsName):
-    with np.load("../../data/datasets/" + dsName, allow_pickle=True) as data:
+    with np.load("data/datasets/" + dsName, allow_pickle=True) as data:
         img = data['images']
         lab = data['labels']
     print("Dataset loaded.")
@@ -26,13 +26,13 @@ def readDataset(dsName):
 
 
 def getModel(modelName):
-    mod = tf.keras.models.load_model('../../data/models/' + modelName)
+    mod = tf.keras.models.load_model('data/models/' + modelName)
     print("Model " + modelName + " loaded.")
     return mod
 
 
 # function returns sum of distances of particular point between all frames
-def getPointsDistance(img, points=(9, 10, 11, 12, 13, 14)):
+def getPointsDistance(img, points=(8, 9, 10, 12, 13, 14)):
     moveSum = np.zeros(shape=3)
     for k in points:
         for f in range(1, 32):
@@ -52,8 +52,7 @@ def splitDataset(img, lab):
     return np.array(stat), np.array(dyn), np.array(lStat), np.array(lDyn)
 
 
-poses = ("stanie", "siedz.", "leż.", "poch.", "klęcz.",
-         "walk", "jump")
+poses = ("stanie", "siedz.", "leż.", "poch.", "klęcz.", "chodz,", "skak.")
 args = getArgs()
 images, labels = readDataset(args.dataset)
 images = images / 255.0
@@ -85,5 +84,5 @@ plt.figure()
 sns.heatmap(confusionMatrix * 100, xticklabels=poses, yticklabels=poses, annot=True, fmt='.1f', cmap="YlOrBr")
 plt.xlabel("Zaklasyfikowane pozy")
 plt.ylabel("Rzeczywiste pozy")
-plt.title(f"Dokładność = {round(relativeAccuracy * 100, 2)}%")
+plt.title(f"Dokładność = {round(absoluteAccuracy * 100, 2)}%")
 plt.show()

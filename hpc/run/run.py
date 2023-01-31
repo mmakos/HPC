@@ -15,7 +15,7 @@ def parseArgs():
     parser.add_argument("-p", "--no_pose", help="Pose will be estimated.", action="store_true")
     parser.add_argument("-g", "--gpu_mode", help="Pose classification will be executed on GPU, but GPU can be out of memory", action="store_true")
     parser.add_argument("-d", "--no_depth", help="Depth canal will be excluded.", action="store_true")
-    parser.add_argument("-l", "--estimation_library", help="Library for pose estimation, AlphaPose or OpenPose.", action="store_true", default="AlphaPose")
+    parser.add_argument("-l", "--estimation_library", help="Library for pose estimation, AlphaPose or OpenPose.", default="AlphaPose")
     return parser.parse_known_args()
 
 
@@ -51,6 +51,7 @@ if __name__ == "__main__":
             # list of humans in the same order as poses
             # camera.getFrame() returns ( frameRGB, frameDepth ) from available stream
             img, _, _ = wrapper.proceed(camera.getFrame(), noDepth=args.no_depth, noPose=args.no_pose)
+            camera.getFrame()
             if img is None:
                 print("End of video.")
                 break

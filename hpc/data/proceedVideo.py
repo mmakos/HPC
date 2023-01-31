@@ -127,7 +127,7 @@ def proceedFrame():
         image = frameRGB
         idx = i - beginFrame
         if idx >= 0:
-            rgbdKeypoints = preprocess([annotations[idx]], frameD)
+            rgbdKeypoints = preprocess([annotations[idx]], frameD, order=False)
             display.skeleton(image, annotations[idx])
         else:
             rgbdKeypoints = []

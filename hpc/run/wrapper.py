@@ -45,7 +45,7 @@ class Wrapper:
         print("Model " + modName + " loaded.")
         print(self.model.summary())
         if dynName is not None:
-            self.model = tf.keras.models.load_model('data/models/' + dynName)
+            self.dynModel = tf.keras.models.load_model('data/models/' + dynName)
             print("Model " + dynName + " loaded.")
             print(self.dynModel.summary())
         else:
@@ -73,7 +73,7 @@ class Wrapper:
                 display.displayPose(frameRGB, human, str(poses[j][1]) + ": " +
                                     c.poses[np.argmax(poses[j][0])] +
                                     f" - {int(np.max(poses[j][0]) * 100)}%")
-                display.skeleton(frameRGB, human)
+                # display.skeleton(frameRGB, human)
             except:
                 pass
         if not noTime:

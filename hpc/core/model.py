@@ -2,12 +2,14 @@ import os
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from tensorflow.keras import layers, models, applications, optimizers
-import consts as c
+import hpc.consts as c
 
 
 # Function creates and returns CNN model based on VGG network
 def getModel(m="smallVGG"):
     if m == "smallVGG":
+        return getSmallVGG()
+    if m == "smallVGG48":
         return getSmallVGG()
     elif m == "MobileNet":
         return getMobileNet()

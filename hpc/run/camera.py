@@ -4,7 +4,6 @@ import sys
 import cv2
 import numpy as np
 
-sys.path.insert(1, '../func')
 import hpc.consts as c
 
 
