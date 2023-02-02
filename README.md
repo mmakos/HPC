@@ -39,17 +39,16 @@ The best solution for now is splitting poses to two groups: static and dynamic. 
 
 ## Requirements
 For now:
-* Built OpenPose in folder `/externals/openpose/build`
-* Python 3 (I work with 3.7 and I don't support other versions for now (e.g. OpenPose didn't work for me with Python 3.9) ) with libraries:
+* Built OpenPose in folder `/externals/openpose/build` or AlphaPose in `/externals/AlphaPose` - it can be downloaded as submodule `git submodule update --init --recursive` but then it has to be installed as described in original repository. You will have to download proper model as well. 
+* Python 3 with libraries (for run):
     * tensorflow
     * opencv-python
     * primesense (for *.oni* files and some RGBD sensors with OpenNI 2 support)
     * pyrealsense2 (for *.bag* files and RealSense sensor)
     * keyboard
     * numpy (comes with opencv)<br>
-      *You can satisfy all above requirements by running script `requirements.bat`*
-* For working with robot camera - Orbbec Astra SDK - OpenNI in folder `/externals`
-* For working with RealSense camera - Realsense SDK.
+* For developing you will have to install some additional libraries (all requirements can be satisfied with `requirements.bat`)
+* For working with Orbbec Astra sensor - Orbbec Astra SDK - OpenNI in folder `/externals`
 
 ## Working with (available modules)
 For now I implemented modules to create datasets from saved RGBD video, training net and pose classification.
@@ -62,8 +61,11 @@ Then you can classify pose with *estimateVideo.py*.
 Both *estimateVideo.py* and *proceedVideo.py* modules works with *.bag* file (any RGBD stream saved by rospy library (used for RealSense sensor, by it can be used also for Tiago robot sensor), *.oni* files (not tested yet, doubt it will be used), regular video file (no depth frames though) and finally with images folder (images has to have on 4th position from end letter d for depth and c for color frame and has to be in alphabetical order).
 *estimateVideo.py* module works with RealSense live stream as well.
 
-Usage of above modules is described below. 
+Usage of above modules is described below.
+
 ### Running
+All scripts has to be run from main directory (`/HPC`). It can require to add some directories from AlphaPose/OpenPose to path or edit configs of those libraries (ex. AlphaPose takes YOLO detector model from path relative to itself `detector/yolo/cfg...`, so you will have to prepend it with `external/AlphaPose`).
+
 The only module that is needed for viewing stream from camera with estimated poses is run.py. This module is also an example of using this system by developers (it contains examples of getting data).
 
 If you are a developer and you want to use that data some other way, you need to use wrapper and camera modules. Usage of that modules is shown in run.py module (with comments).
@@ -71,7 +73,7 @@ If you are a developer and you want to use that data some other way, you need to
 #### run.py
 Module loads video and estimates poses for every human in every frame.
 
-Usage: `python proceedVideo.py -v video -w write_name -c -p -g -d`:
+Usage: `python hpc/run/run.py -v video -w write_name -c -p -g -d`:
 * *video* - path to your video relative to running folder or to `/data/videos` folder. If none, program will try to run camera stream.
 * *write_name* - name of output video (if you want to save proceeded video).
 * *-c* - hybrid/cross - select if you want to use hybrid solution.
@@ -85,43 +87,43 @@ Usage: `python proceedVideo.py -v video -w write_name -c -p -g -d`:
 Current general pipeline of creating dataset (pose is recorded pose and X is number of recording):
 1. Create folders in /data/images and /data/videos for your data (`mkdir /data/images/example`, `mkdir /data/videos/example`). 
 2. Record video as image sequence (finally it is the most universal format and the only one supported in all modules) with only one main skeleton:
-    * `python recordVideo.py -v example/poseX -c` (-c for color preview).
+    * `python hpc/data/recordVideo.py -v example/poseX -c` (-c for color preview).
     * press `s` to start recording (when camera is focused and you are ready)
     * press `q` to end recording
     * remember that path to your video must have slash on the end (`example/poseX/`)
 3. Estimate keypoints and get annotation file:
-    * `python proceedVideo.py example/poseX/ -p example/pose -k`
+    * `python phpc/data/roceedVideo.py example/poseX/ -p example/pose -k`
     * rename main skeleton file from s_atY.p to poseXatY.png and delete rest of skeletons (or you can rename it to poseX+1_atY.png etc. bu I recommend only one skeleton per video). Don't delete number after *at* - it is start frame of skeleton needed for proper synchronization of annotations with video.
 4. Edit keypoints:
-    * `python fillKeypoints example/poseX/ example/pose/poseXatY.p`
+    * `python hpc/data/fillKeypoints example/poseX/ example/pose/poseXatY.p`
     * press *Skip* button to find next incomplete frame or go frame by frame using *Next* button.
     * press *Save* to save changes into file.
     * your file is writen as `poseXatY_f.p` (you can rename it to previous version file, but you will loose original annotations).
 5. Create long images from annotations:
-    * `python proceedVideo.py example/poseX/ -a example/pose/poseXatY_f.p -p example/pose -l`
+    * `python hpc/data/proceedVideo.py example/poseX/ -a example/pose/poseXatY_f.p -p example/pose -l`
     * you should receive one *.png* file `s0.png`. Rename it to `poseX.png`.
 6. Repeat steps 1-5 to create another skeleton for your pose.
     * After that you should have bunch of images in `/data/images/example/pose/` folder named `pose0.png pose1.png` etc.
 7. Create small images for training from created long images:
-    * `python augument.py example/pose -o example/pose_Z` where *Z* is code of pose eg. for stand it's 0.
+    * `python hpc/data/augument.py example/pose -o example/pose_Z` where *Z* is code of pose eg. for stand it's 0.
     * If you didn't type -o argument your short images will be stored in `/data/images/example/pose/pose_aug/` folder.
 8. Repeat steps 1-7 for different poses.
     * After that you should have in your `/data/images/example/` folder bunch of folders named `stand_0 sit_1` etc.
 9. Create dataset from all images:
-    * `python createDataset.py example -d datasetName`.
+    * `python hpc/data/createDataset.py example -d datasetName`.
 
 
 #### recordVideo.py
 Module records stream of RGBD camera and writes output to *.oni* file. Output video will be stored in `/data/videos`.
 
-Usage: `python recordVideo.py -v video_name`:
+Usage: `python hpc/data/recordVideo.py -v video_name`:
 * *video_name* - name of output video without extinction.
 
 #### proceedVideo.py
 Module takes recorded video in *.oni* or regular video format, estimates human skeletons and converts this skeletons into images.
 Module also shows video with estimated skeletons.
 
-Usage: `python proceedVideo.py video_path -p proceed -a annotations -v -w -l -k`:
+Usage: `python hpc/data/proceedVideo.py video_path -p proceed -a annotations -v -w -l -k`:
 * video_path - path to your video relative to running folder or to `/data/video` folder.
 * proceed - proceed mode. Select this option when you want to code estimated skeletons to images. *Proceed* is name of folder where images will be saved (relative to `/data/images/` folder).
 * annotations - skeletons will not be estimated. It will be loaded from annotation file with pickle extinction (*.p*) instead.
@@ -134,7 +136,7 @@ Usage: `python proceedVideo.py video_path -p proceed -a annotations -v -w -l -k`
 Module is a simple keypoints annotations editor. Keypoints, which are not detected can be easily dragged to it's proper position.
 Corrected annotations will be stored in file with input name + '_f'.
 
-Usage: `python fillKeypoints.y video annotations`:
+Usage: `python hpc/data/fillKeypoints.y video annotations`:
 * video - path to video you want to open (it is independent of the keypoint annotations, so please make sure you typed correct path).
 * annotations - path to file with keypoints annotations you want to correct.
 
@@ -155,7 +157,7 @@ On the down left corner of window you can see name of currently edited keypoint.
 #### viewImagesAsVideo.py
 Module shows skeleton images as video.
 
-Usage: `python viewImagesAsVideo.py -s skeleton -f fps -z zoom`
+Usage: `python hpc/data/viewImagesAsVideo.py -s skeleton -f fps -z zoom`
 * skeleton - index of skeleton to be shown
 * fps - how many frames per second will be played
 * zoom - factor by which every dimension will be multiplied
@@ -175,7 +177,7 @@ poses
 |--walk_1
 </pre>
 
-Usage: `python createDataset.py dataset_name -p poses -z`
+Usage: `python hpc/data/createDataset.py dataset_name -p poses -z`
 * dataset_name - name of dataset you want to create.
 * poses - path to your folder with labels subfolders relative to `/data` folder.
 * -z - if this option is selected dataset will be stored in *.zip* format instead of *.npy*.
@@ -184,7 +186,7 @@ Usage: `python createDataset.py dataset_name -p poses -z`
 #### train.py
 Module opens model or creates new one, trains it on given dataset in *.npz* format and saves trained model.
 
-Usage: `python train.py dataset_name -m model_name -o output_model`
+Usage: `python hpc/train/train.py dataset_name -m model_name -o output_model`
 * dataset_name - name of data set on which you want to train your model.
 * model_name - name of model, which will be opened or created if no such model exists
 * output_model - name of output model, if model with that name exists it will be overwritten. If this arg is not specified model won't be saved.
