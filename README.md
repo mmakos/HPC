@@ -3,7 +3,7 @@
 
 Please visit also [my website mmakos.pl](http://www.mmakos.pl/programming/hpc).
 
-![Output](docimages/poseEst.gif)
+![Output](docimages/outputAll.gif)
 
 ## Content
 1. [About project](#about-project)

@@ -1,0 +1,6 @@
+[submodule "externals/AlphaPose"]
+	path = externals/AlphaPose
+	url = https://github.com/MVIG-SJTU/AlphaPose.git
+[submodule "externals/openpose"]
+	path = externals/openpose
+	url = https://github.com/CMU-Perceptual-Computing-Lab/openpose.git

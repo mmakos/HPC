@@ -1,6 +1,5 @@
 /OpenNI/
 /img/
-/externals/
 /venv/
 /src/notUsed/tests.py
 /RealSense/
@@ -8,3 +7,5 @@
 /info.txt
 /dataFinal/
 /src/run/test2.py
+/dataOrigin/
+/info2.txt

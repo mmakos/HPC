@@ -7,7 +7,7 @@ framesNumber = 32
 keypointsNumber = 15
 
 # keypoints detection
-keypointThreshold = 0.6  # below this threshold, keypoints from openPose are not considered
+keypointThreshold = 0.4  # below this threshold, keypoints from openPose are not considered
 minDetectedKeypoints = 8  # minimum amount of detected keypoints for classifying pose
 interpolateNotDetected = True  # Interpolates not detected keypoints with previous and following frame
 fillNotDetected = True  # fills not detected keypoints with several algorithms (gives better accuracy)
@@ -45,9 +45,9 @@ learningRate = 0.0001
 
 # hybrid
 distancePoints = (8, 9, 10, 12, 13, 14)  # tuple of points, which defines distance to categorize pose to dyn or static
-statDynThreshold = 2718  # distance below which poses are static and above - dynamic
-xDistCoefficient = 1
-yDistCoefficient = 1
+statDynThreshold = 2500  # distance below which poses are static and above - dynamic
+xDistCoefficient = 1.5
+yDistCoefficient = 0.5
 
 # poses
 poses = (

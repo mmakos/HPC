@@ -39,7 +39,7 @@ if __name__ == "__main__":
     # create wrapper (it will do all to classify poses on image)
     # if you want to load one model, just give a name of this model
     # if you want to load two models (static and dynamic for hybrid solution) give a tuple with names of models
-    wrapper = Wrapper(model=("Static", "Dynamic") if args.hybrid else "Static",
+    wrapper = Wrapper(model=("Static", "Dynamic") if args.hybrid else "All",
                       gpuMode=args.gpu_mode, estimationLibrary=args.estimation_library, addParams=allArgs[1])
 
     firstFrame = True
@@ -50,8 +50,7 @@ if __name__ == "__main__":
             # list of classified poses with human unique index
             # list of humans in the same order as poses
             # camera.getFrame() returns ( frameRGB, frameDepth ) from available stream
-            img, _, _ = wrapper.proceed(camera.getFrame(), noDepth=args.no_depth, noPose=args.no_pose)
-            camera.getFrame()
+            img, _, _ = wrapper.proceed(camera.getFrame(), noDepth=args.no_depth, noPose=args.no_pose, noTime=True)
             if img is None:
                 print("End of video.")
                 break
@@ -62,7 +61,7 @@ if __name__ == "__main__":
             # if we want to create output video (now frame dimensions are initialized)
             if firstFrame and args.write_name is not None:
                 firstFrame = False
-                out = cv2.VideoWriter(args.write_name, cv2.VideoWriter_fourcc(*'mp4v'), 30,
+                out = cv2.VideoWriter(args.write_name, cv2.VideoWriter_fourcc(*'mp4v'), 15,
                                       (c.frameWidth, c.frameHeight))
             # write image to output video
             if out is not None:
