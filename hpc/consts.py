@@ -45,7 +45,7 @@ learningRate = 0.0001
 
 # hybrid
 distancePoints = (8, 9, 10, 12, 13, 14)  # tuple of points, which defines distance to categorize pose to dyn or static
-statDynThreshold = 2500  # distance below which poses are static and above - dynamic
+statDynThreshold = 2700  # distance below which poses are static and above - dynamic
 xDistCoefficient = 1.5
 yDistCoefficient = 0.5
 

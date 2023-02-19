@@ -41,7 +41,7 @@ def getModel():
         print("Model " + args.model_name + " loaded.")
     except Exception:
         print("Creating new model.")
-        mod = model.getModel("smallVGG")
+        mod = model.getModel()
     print()
     print(mod.summary())
     return mod
@@ -96,27 +96,20 @@ if __name__ == '__main__':
     train = train.batch(c.batchSize)
     validation = validation.batch(c.batchSize)
 
-    bestAcc = 0
-    number = 0
-    output_model = args.output_model + "0"
-    while True:
-        output_model = output_model[:-1] + str(number)
-        m = getModel()
-        mc = tf.keras.callbacks.ModelCheckpoint(
-            filepath='data/models/' + output_model,
-            save_weights_only=False,
-            monitor='val_accuracy',
-            mode='max',
-            save_best_only=True)
-        history = m.fit(train, epochs=c.epochs, batch_size=c.batchSize, validation_data=validation, callbacks=[mc])
+    output_model = args.output_model
+    m = getModel()
+    mc = tf.keras.callbacks.ModelCheckpoint(
+        filepath='data/models/' + output_model,
+        save_weights_only=False,
+        monitor='val_accuracy',
+        mode='max',
+        save_best_only=True)
+    history = m.fit(train, epochs=c.epochs, batch_size=c.batchSize, validation_data=validation, callbacks=[mc])
 
-        acc = max(history.history['val_accuracy'])
-        idx = history.history['val_accuracy'].index(acc)
-        loss = history.history['val_loss'][idx]
-        if acc > bestAcc:
-            bestAcc = acc
-            showPlots(history.history, number)
-            file = open("info2.txt", "a")
-            file.write(f"\n{output_model}, accuracy = {acc}, loss = {loss}, batch size = {c.batchSize}, after epoch {idx + 1}")
-            file.close()
-            number = (number + 1) % 2
+    acc = max(history.history['val_accuracy'])
+    idx = history.history['val_accuracy'].index(acc)
+    loss = history.history['val_loss'][idx]
+    showPlots(history.history)
+    file = open("info.txt", "a")
+    file.write(f"\n{output_model}, accuracy = {acc}, loss = {loss}, batch size = {c.batchSize}, after epoch {idx + 1}")
+    file.close()
